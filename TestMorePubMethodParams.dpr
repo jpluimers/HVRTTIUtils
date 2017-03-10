@@ -8,7 +8,7 @@ uses
   TypInfo,
   Controls,
   StdCtrls,
-//  ObjAuto,
+  ObjAuto,
   Windows,
   SoapHTTPPasInv,
   WebSnapObjs,

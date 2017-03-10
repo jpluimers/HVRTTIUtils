@@ -1,11 +1,11 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectGuid>{f5c5a335-ca13-4b0a-84a9-2bb0b51d636c}</ProjectGuid>
-    <MainSource>TestPublishedMethodParams.dpr</MainSource>
+    <ProjectGuid>{4737a337-afdf-463b-ab59-3cf692e2885e}</ProjectGuid>
+    <MainSource>TestMorePubMethodParams.dpr</MainSource>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-    <DCC_DependencyCheckOutputName>TestPublishedMethodParams.exe</DCC_DependencyCheckOutputName>
+    <DCC_DependencyCheckOutputName>TestMorePubMethodParams.exe</DCC_DependencyCheckOutputName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Version>7.0</Version>
@@ -55,13 +55,13 @@
       <VersionInfoKeys Name="Comments"></VersionInfoKeys>
     </VersionInfoKeys>
     <Source>
-      <Source Name="MainSource">TestPublishedMethodParams.dpr</Source>
+      <Source Name="MainSource">TestMorePubMethodParams.dpr</Source>
     </Source>
   </Delphi.Personality> </BorlandProject></BorlandProject>
   </ProjectExtensions>
-  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup />
   <ItemGroup>
-    <DelphiCompile Include="TestPublishedMethodParams.dpr">
+    <DelphiCompile Include="TestMorePubMethodParams.dpr">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
     <DCCReference Include="HVInterfaceMethods.pas" />
@@ -70,4 +70,5 @@
     <DCCReference Include="HVPublishedMethodParams.pas" />
     <DCCReference Include="HVVMT.pas" />
   </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
 </Project>
