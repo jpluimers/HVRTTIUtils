@@ -1,0 +1,154 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{7a867b81-6603-489d-9f89-3c557f0bf5b8}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Projects Include="TestDmt.dproj" />
+    <Projects Include="TestExtendedInterfaceRTTI.dproj" />
+    <Projects Include="TestHVMethodInfoClasses.dproj" />
+    <Projects Include="TestInterfaceVariants.dproj" />
+    <Projects Include="TestIntfTable.dproj" />
+    <Projects Include="TestMethodTable.dproj" />
+    <Projects Include="TestMPlus.dproj" />
+    <Projects Include="TestPolyPub.dproj" />
+    <Projects Include="TestPubFieldTable.dproj" />
+    <Projects Include="TestPubMethodParams.dproj" />
+    <Projects Include="TestPubMethodTable.dproj" />
+    <Projects Include="TestSimpleInterfaceRTTI.dproj" />
+    <Projects Include="TestVmt.dproj" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Default.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+  <BorlandProject xmlns=""> <Default.Personality> </Default.Personality> </BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Target Name="TestVmt">
+    <MSBuild Projects="TestVmt.dproj" Targets="" />
+  </Target>
+  <Target Name="TestVmt:Clean">
+    <MSBuild Projects="TestVmt.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestVmt:Make">
+    <MSBuild Projects="TestVmt.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestDmt">
+    <MSBuild Projects="TestDmt.dproj" Targets="" />
+  </Target>
+  <Target Name="TestDmt:Clean">
+    <MSBuild Projects="TestDmt.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestDmt:Make">
+    <MSBuild Projects="TestDmt.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestMPlus">
+    <MSBuild Projects="TestMPlus.dproj" Targets="" />
+  </Target>
+  <Target Name="TestMPlus:Clean">
+    <MSBuild Projects="TestMPlus.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestMPlus:Make">
+    <MSBuild Projects="TestMPlus.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestMethodTable">
+    <MSBuild Projects="TestMethodTable.dproj" Targets="" />
+  </Target>
+  <Target Name="TestMethodTable:Clean">
+    <MSBuild Projects="TestMethodTable.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestMethodTable:Make">
+    <MSBuild Projects="TestMethodTable.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestPubMethodTable">
+    <MSBuild Projects="TestPubMethodTable.dproj" Targets="" />
+  </Target>
+  <Target Name="TestPubMethodTable:Clean">
+    <MSBuild Projects="TestPubMethodTable.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestPubMethodTable:Make">
+    <MSBuild Projects="TestPubMethodTable.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestPubMethodParams">
+    <MSBuild Projects="TestPubMethodParams.dproj" Targets="" />
+  </Target>
+  <Target Name="TestPubMethodParams:Clean">
+    <MSBuild Projects="TestPubMethodParams.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestPubMethodParams:Make">
+    <MSBuild Projects="TestPubMethodParams.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestPubFieldTable">
+    <MSBuild Projects="TestPubFieldTable.dproj" Targets="" />
+  </Target>
+  <Target Name="TestPubFieldTable:Clean">
+    <MSBuild Projects="TestPubFieldTable.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestPubFieldTable:Make">
+    <MSBuild Projects="TestPubFieldTable.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestIntfTable">
+    <MSBuild Projects="TestIntfTable.dproj" Targets="" />
+  </Target>
+  <Target Name="TestIntfTable:Clean">
+    <MSBuild Projects="TestIntfTable.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestIntfTable:Make">
+    <MSBuild Projects="TestIntfTable.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestSimpleInterfaceRTTI">
+    <MSBuild Projects="TestSimpleInterfaceRTTI.dproj" Targets="" />
+  </Target>
+  <Target Name="TestSimpleInterfaceRTTI:Clean">
+    <MSBuild Projects="TestSimpleInterfaceRTTI.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestSimpleInterfaceRTTI:Make">
+    <MSBuild Projects="TestSimpleInterfaceRTTI.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestInterfaceVariants">
+    <MSBuild Projects="TestInterfaceVariants.dproj" Targets="" />
+  </Target>
+  <Target Name="TestInterfaceVariants:Clean">
+    <MSBuild Projects="TestInterfaceVariants.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestInterfaceVariants:Make">
+    <MSBuild Projects="TestInterfaceVariants.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestPolyPub">
+    <MSBuild Projects="TestPolyPub.dproj" Targets="" />
+  </Target>
+  <Target Name="TestPolyPub:Clean">
+    <MSBuild Projects="TestPolyPub.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestPolyPub:Make">
+    <MSBuild Projects="TestPolyPub.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestHVMethodInfoClasses">
+    <MSBuild Projects="TestHVMethodInfoClasses.dproj" Targets="" />
+  </Target>
+  <Target Name="TestHVMethodInfoClasses:Clean">
+    <MSBuild Projects="TestHVMethodInfoClasses.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestHVMethodInfoClasses:Make">
+    <MSBuild Projects="TestHVMethodInfoClasses.dproj" Targets="Make" />
+  </Target>
+  <Target Name="TestExtendedInterfaceRTTI">
+    <MSBuild Projects="TestExtendedInterfaceRTTI.dproj" Targets="" />
+  </Target>
+  <Target Name="TestExtendedInterfaceRTTI:Clean">
+    <MSBuild Projects="TestExtendedInterfaceRTTI.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="TestExtendedInterfaceRTTI:Make">
+    <MSBuild Projects="TestExtendedInterfaceRTTI.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="TestVmt;TestDmt;TestMPlus;TestMethodTable;TestPubMethodTable;TestPubMethodParams;TestPubFieldTable;TestIntfTable;TestSimpleInterfaceRTTI;TestInterfaceVariants;TestPolyPub;TestHVMethodInfoClasses;TestExtendedInterfaceRTTI" />
+  </Target>
+  <Target Name="Clean">
+    <CallTarget Targets="TestVmt:Clean;TestDmt:Clean;TestMPlus:Clean;TestMethodTable:Clean;TestPubMethodTable:Clean;TestPubMethodParams:Clean;TestPubFieldTable:Clean;TestIntfTable:Clean;TestSimpleInterfaceRTTI:Clean;TestInterfaceVariants:Clean;TestPolyPub:Clean;TestHVMethodInfoClasses:Clean;TestExtendedInterfaceRTTI:Clean" />
+  </Target>
+  <Target Name="Make">
+    <CallTarget Targets="TestVmt:Make;TestDmt:Make;TestMPlus:Make;TestMethodTable:Make;TestPubMethodTable:Make;TestPubMethodParams:Make;TestPubFieldTable:Make;TestIntfTable:Make;TestSimpleInterfaceRTTI:Make;TestInterfaceVariants:Make;TestPolyPub:Make;TestHVMethodInfoClasses:Make;TestExtendedInterfaceRTTI:Make" />
+  </Target>
+  <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
+</Project>
