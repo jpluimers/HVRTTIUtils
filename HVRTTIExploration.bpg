@@ -1,0 +1,59 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = TestVmt.exe TestDmt.exe TestMPlus.exe TestMethodTable.exe \
+  TestPubMethodTable.exe TestPubMethodParams.exe TestPubFieldTable.exe \
+  TestIntfTable.exe TestSimpleInterfaceRTTI.exe TestInterfaceVariants.exe \
+  TestPolyPub.exe TestHVMethodInfoClasses.exe TestExtendedInterfaceRTTI.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+TestExtendedInterfaceRTTI.exe: TestExtendedInterfaceRTTI.dpr
+  $(DCC)
+
+TestPubMethodTable.exe: TestPubMethodTable.dpr
+  $(DCC)
+
+TestPubFieldTable.exe: TestPubFieldTable.dpr
+  $(DCC)
+
+TestPubMethodParams.exe: TestPubMethodParams.dpr
+  $(DCC)
+
+TestSimpleInterfaceRTTI.exe: TestSimpleInterfaceRTTI.dpr
+  $(DCC)
+
+TestVmt.exe: TestVmt.dpr
+  $(DCC)
+
+TestDmt.exe: TestDmt.dpr
+  $(DCC)
+
+TestInterfaceVariants.exe: TestInterfaceVariants.dpr
+  $(DCC)
+
+TestIntfTable.exe: TestIntfTable.dpr
+  $(DCC)
+
+TestMethodTable.exe: TestMethodTable.dpr
+  $(DCC)
+
+TestPolyPub.exe: TestPolyPub.dpr
+  $(DCC)
+
+TestHVMethodInfoClasses.exe: TestHVMethodInfoClasses.dpr
+  $(DCC)
+
+TestMPlus.exe: TestMPlus.dpr
+  $(DCC)
+
+
