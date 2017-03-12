@@ -28,20 +28,20 @@ implementation
 function SkipPackedShortString(Value: PShortString): Pointer;
 begin
   Result := Value;
-  Inc(PChar(Result), SizeOf(Value^[0]) + Length(Value^));
+  Inc(PAnsiChar(Result), SizeOf(Value^[0]) + Length(Value^));
 end;
 
 function PackedShortString(Value: PShortString; var NextField { : Pointer } ): PShortString; overload;
 begin
   Result := Value;
   PShortString(NextField) := Value;
-  Inc(PChar(NextField), SizeOf(Result^[0]) + Length(Result^));
+  Inc(PAnsiChar(NextField), SizeOf(Result^[0]) + Length(Result^));
 end;
 
 function PackedShortString(var NextField { : Pointer } ): PShortString; overload;
 begin
   Result := PShortString(NextField);
-  Inc(PChar(NextField), SizeOf(Result^[0]) + Length(Result^));
+  Inc(PAnsiChar(NextField), SizeOf(Result^[0]) + Length(Result^));
 end;
 
 function GetMethodSignature(Event: PPropInfo): TMethodSignature;
@@ -77,6 +77,10 @@ begin
   Assert(Assigned(Event) and Assigned(Event.PropType));
   Assert(Event.PropType^.Kind = tkMethod);
   EventData := GetTypeData(Event.PropType^);
+  Finalize(Result);
+  FillChar(Result, SizeOf(Result), 0);
+  Result.CallConv:= ccReg; // Educated guess
+  Result.HasSignatureRTTI := True;
   Result.MethodKind := EventData.MethodKind;
   Result.ParamCount := EventData.ParamCount;
   SetLength(Result.Parameters, Result.ParamCount);

@@ -62,18 +62,18 @@ implementation
 function Skip(Value: PShortString): Pointer; overload;
 begin
   Result := Value;
-  Inc(PChar(Result), SizeOf(Value^[0]) + Length(Value^));
+  Inc(PAnsiChar(Result), SizeOf(Value^[0]) + Length(Value^));
 end;
 
 function Skip(Value: PPackedShortString; var NextField { : Pointer } ): PShortString; overload;
 begin
   Result := PShortString(Value);
-  Inc(PChar(NextField), SizeOf(Char) + Length(Result^) - SizeOf(TPackedShortString));
+  Inc(PAnsiChar(NextField), SizeOf(Char) + Length(Result^) - SizeOf(TPackedShortString));
 end;
 
 function Skip(CurrField: Pointer; FieldSize: Integer): Pointer; overload;
 begin
-  Result := PChar(Currfield) + FieldSize;
+  Result := PAnsiChar(Currfield) + FieldSize;
 end;
 
 function Dereference(P: PPTypeInfo): PTypeInfo;
@@ -148,8 +148,8 @@ begin
         (i = 0) and //
         (MethodParam.ParamName = 'Self') and //
         (MethodParam.TypeInfo.Kind in [tkInterface, tkClass]) //
-        then 
-		  Continue;
+        then
+          Continue;
       if pfResult in MethodParam.Flags then
         Continue;
       if ParamIndex > 0 then
