@@ -202,7 +202,7 @@ begin
     Result := @Pmt.Methods[0];
     while Index > 0 do
     begin
-      Inc(PChar(Result), Result.Size);
+      Inc(PAnsiChar(Result), Result.Size);
       Dec(Index);
     end;
   end
@@ -226,17 +226,17 @@ var
 begin
   Result := PublishedMethod;
 {$IFDEF DEBUG}
-  ExpectedSize :=   SizeOf(Result.Size) 
-                  + SizeOf(Result.Address) 
-                  + SizeOf(Result.Name[0]) 
+  ExpectedSize :=   SizeOf(Result.Size)
+                  + SizeOf(Result.Address)
+                  + SizeOf(Result.Name[0])
     + Length(Result.Name);
   if Result.Size <> ExpectedSize then
     raise Exception.CreateFmt( //
-'RTTI for the published method "%s" of class "%s" has %d extra bytes of unknown data!', 
+'RTTI for the published method "%s" of class "%s" has %d extra bytes of unknown data!',
       [Result.Name, AClass.ClassName, Result.Size - ExpectedSize]);
 {$ENDIF}
   if Assigned(Result) then
-    Inc(PChar(Result), Result.Size);
+    Inc(PAnsiChar(Result), Result.Size);
 end;
 
 function FindPublishedMethodByName(AClass: TClass; const AName: ShortString): PPublishedMethod;
@@ -329,7 +329,7 @@ function GetNextPublishedField(AClass: TClass; PublishedField: PPublishedField):
 begin
   Result := PublishedField;
   if Assigned(Result) then
-    Inc(PChar(Result), SizeOf(Result.Offset) //
+    Inc(PAnsiChar(Result), SizeOf(Result.Offset) //
       + SizeOf(Result.TypeIndex) //
       + SizeOf(Result.Name[0]) + //
       Length(Result.Name));
@@ -398,7 +398,7 @@ end;
 
 function FindPublishedFieldByAddr(Instance: TObject; AAddr: Pointer): PPublishedField;
 begin
-  Result := FindPublishedFieldByOffset(Instance.ClassType, PChar(AAddr) - PChar(Instance));
+  Result := FindPublishedFieldByOffset(Instance.ClassType, PAnsiChar(AAddr) - PAnsiChar(Instance));
 end;
 
 function FindPublishedFieldOffset(AClass: TClass; const AName: ShortString): Integer;
@@ -418,7 +418,7 @@ var
 begin
   Offset := FindPublishedFieldOffset(Instance.ClassType, AName);
   if Offset >= 0 then
-    Result := PObject(PChar(Instance) + Offset)
+    Result := PObject(PAnsiChar(Instance) + Offset)
   else
     Result := nil;
 end;
@@ -459,7 +459,7 @@ end;
 function GetPublishedFieldAddr(Instance: TObject; Field: PPublishedField): PObject;
 begin
   if Assigned(Field) then
-    Result := PObject(PChar(Instance) + Field.Offset)
+    Result := PObject(PAnsiChar(Instance) + Field.Offset)
   else
     Result := nil;
 end;
