@@ -59,7 +59,7 @@
     </Source>
   </Delphi.Personality> </BorlandProject></BorlandProject>
   </ProjectExtensions>
-  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
   <ItemGroup>
     <DelphiCompile Include="TestHVMethodInfoClasses.dpr">
       <MainSource>MainSource</MainSource>
@@ -67,5 +67,4 @@
     <DCCReference Include="HVMethodInfoClasses.pas" />
     <DCCReference Include="HVMethodSignature.pas" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
 </Project>

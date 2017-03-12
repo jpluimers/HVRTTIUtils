@@ -59,11 +59,10 @@
     </Source>
   </Delphi.Personality> </BorlandProject></BorlandProject>
   </ProjectExtensions>
-  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
   <ItemGroup>
     <DelphiCompile Include="TestMPlus.dpr">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
 </Project>
