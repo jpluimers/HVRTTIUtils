@@ -159,7 +159,7 @@ var
   MethodSignature: TMethodSignature;
 begin
   if FindPublishedMethodSignature(Instance, Method.Address, MethodSignature) then
-    Result := MethodSignatureToString(Method.Name, MethodSignature)
+    Result := MethodSignatureToString(string(Method.Name), MethodSignature)
   else
     Result := Format('procedure %s(???);', [Method.Name]);
 end;

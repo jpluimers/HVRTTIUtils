@@ -9,6 +9,15 @@ type
   PClass = ^TClass;
 
   // TObject virtual methods' signatures
+{$IFDEF AUTOREFCOUNT} // In XE6, but only mobile platforms? (before?)
+  P__ObjAddRef       = function (Self: TObject): Integer;
+  P__ObjRelease      = function (Self: TObject): Integer;
+{$ENDIF}
+{$IF CompilerVersion >= 20} // Delphi 2009 ->
+  PEquals            = function (Self: TObject; Obj: TObject): Boolean;
+  PGetHashCode       = function (Self: TObject): Integer;
+  PToString          = function (Self: TObject): string;
+{$IFEND}
   PSafeCallException = function(Self: TObject; ExceptObject: TObject; ExceptAddr: Pointer): HResult;
   PAfterConstruction = procedure(Self: TObject);
   PBeforeDestruction = procedure(Self: TObject);
@@ -89,6 +98,15 @@ type
     ClassName: PShortString;
     InstanceSize: PLongint;
     Parent: PClass;
+{$IFDEF AUTOREFCOUNT}
+    __ObjAddRef       : P__ObjAddRef;
+    __ObjRelease      : P__ObjRelease;
+{$ENDIF}
+{$IF CompilerVersion >= 20}
+    Equals            : PEquals;
+    GetHashCode       : PGetHashCode;
+    ToString          : PToString;
+{$IFEND}
     SafeCallException: PSafeCallException;
     AfterConstruction: PAfterConstruction;
     BeforeDestruction: PBeforeDestruction;
@@ -144,6 +162,10 @@ function GetVmt(AClass: TClass): PVmt;
 begin
   Result := PVmt(AClass);
   Dec(Result);
+{$IFDEF DEBUG}
+  if Result.SelfPtr <> AClass then
+    raise Exception.CreateFmt('Vmt of %s is not as expected', [AClass.Classname]);
+{$ENDIF}
 end;
 
 // Published methods
@@ -204,13 +226,13 @@ var
 begin
   Result := PublishedMethod;
 {$IFDEF DEBUG}
-  ExpectedSize := SizeOf(Result.Size) //
-    + SizeOf(Result.Address) //
-    + SizeOf(Result.Name[0]) //
+  ExpectedSize :=   SizeOf(Result.Size) 
+                  + SizeOf(Result.Address) 
+                  + SizeOf(Result.Name[0]) 
     + Length(Result.Name);
   if Result.Size <> ExpectedSize then
     raise Exception.CreateFmt( //
-      'RTTI for the published method "%s" of class "%s" has %d extra bytes of unknown data!', //
+'RTTI for the published method "%s" of class "%s" has %d extra bytes of unknown data!', 
       [Result.Name, AClass.ClassName, Result.Size - ExpectedSize]);
 {$ENDIF}
   if Assigned(Result) then
@@ -228,8 +250,7 @@ begin
     begin
       // Note: Length(ShortString) expands to efficient inline code
       if (Length(Result.Name) = Length(AName)) and //
-         (StrLIComp(@Result.Name[1], @AName[1], Length(AName)) = 0) //
-	  then
+         (StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) then 
         Exit;
       Result := GetNextPublishedMethod(AClass, Result);
     end;
@@ -348,8 +369,7 @@ begin
     begin
       // Note: Length(ShortString) expands to efficient inline code
       if (Length(Result.Name) = Length(AName)) and //
-         (StrLIComp(@Result.Name[1], @AName[1], Length(AName)) = 0) //
-      then
+         (StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) then
         Exit;
       Result := GetNextPublishedField(AClass, Result);
     end;
