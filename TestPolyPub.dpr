@@ -1,37 +1,45 @@
 program TestPolyPub;
+
 {$APPTYPE CONSOLE}
-uses Classes, SysUtils, TypInfo, Contnrs;
- 
+
+uses 
+  Classes,
+  SysUtils,
+  TypInfo,
+  Contnrs;
+
 type
-  {$M+}
+{$M+}
   TParent = class
   published
     procedure Polymorphic(const S: string);
   end;
+
   TChild = class
   published
     procedure Polymorphic(const S: string);
   end;
+
   TOther = class
   published
     procedure Polymorphic(const S: string);
   end;
- 
+
 procedure TParent.Polymorphic(const S: string);
 begin
   Writeln('TParent.Polymorphic: ', S);
 end;
- 
+
 procedure TChild.Polymorphic(const S: string);
 begin
   Writeln('TChild.Polymorphic: ', S);
 end;
- 
+
 procedure TOther.Polymorphic(const S: string);
 begin
   Writeln('TOther.Polymorphic: ', S);
 end;
- 
+
 function BuildList: TObjectList;
 begin
   Result := TObjectList.Create;
@@ -39,16 +47,17 @@ begin
   Result.Add(TChild.Create);
   Result.Add(TOther.Create);
 end;
- 
+
 type
-  TPolymorphic = procedure (Self: TObject; const S: string);
+  TPolymorphic = procedure(Self: TObject; const S: string);
+
 procedure CallList(List: TObjectList);
 var
-  i: integer;
+  i: Integer;
   Instance: TObject;
-  Polymorphic: procedure (Self: TObject; const S: string);
+  Polymorphic: procedure(Self: TObject; const S: string);
 begin
-  for i := 0 to List.Count-1 do
+  for i := 0 to List.Count - 1 do
   begin
     Instance := List[i];
     // Separate assign-and-call
@@ -61,8 +70,9 @@ begin
     end;
   end;
 end;
- 
+
 begin
   CallList(BuildList);
-  readln;
+  Readln;
+
 end.

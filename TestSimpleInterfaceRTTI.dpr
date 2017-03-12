@@ -1,7 +1,7 @@
 program TestSimpleInterfaceRTTI;
- 
+
 {$APPTYPE CONSOLE}
- 
+
 uses
   SysUtils,
   TypInfo;
@@ -25,68 +25,71 @@ type
   end;
 *)
 
-type  
+type
   PExtraInterfaceData = ^TExtraInterfaceData;
+
   TExtraInterfaceData = packed record
-    MethodCount: Word;   { # methods }
-  end;  
+    MethodCount: Word; { # methods }
+  end;
 
 function SkipPackedShortString(Value: PShortstring): pointer;
 begin
   Result := Value;
   Inc(PChar(Result), SizeOf(Value^[0]) + Length(Value^));
-end;  
+end;
 
-procedure DumpSimpleInterface(InterfaceTypeInfo: PTypeInfo); 
+procedure DumpSimpleInterface(InterfaceTypeInfo: PTypeInfo);
 var
   TypeData: PTypeData;
   ExtraData: PExtraInterfaceData;
-  i: integer;
+  i: Integer;
 begin
   Assert(Assigned(InterfaceTypeInfo));
   Assert(InterfaceTypeInfo.Kind = tkInterface);
   TypeData := GetTypeData(InterfaceTypeInfo);
   ExtraData := SkipPackedShortString(@TypeData.IntfUnit);
-  writeln('unit ', TypeData.IntfUnit, ';');
-  writeln('type');
-  write('  ', InterfaceTypeInfo.Name, ' = '); 
-  if not (ifDispInterface in TypeData.IntfFlags) then
+  Writeln('unit ', TypeData.IntfUnit, ';');
+  Writeln('type');
+  Write('  ', InterfaceTypeInfo.Name, ' = ');
+  if not(ifDispInterface in TypeData.IntfFlags) then
   begin
-    write('interface');
+    Write('interface');
     if Assigned(TypeData.IntfParent) then
-      write(' (', TypeData.IntfParent^.Name, ')');
-    writeln;
+      Write(' (', TypeData.IntfParent^.Name, ')');
+    Writeln;
   end
-  else  
-    writeln('dispinterface');
+  else
+    Writeln('dispinterface');
   if ifHasGuid in TypeData.IntfFlags then
-    writeln('    [''', GuidToString(TypeData.Guid), ''']');
-  for i := 1 to ExtraData.MethodCount do  
-    writeln('    procedure UnknownName',i,';');
-  writeln('  end;');
-  writeln;
-end;  
+    Writeln('    [''', GuidToString(TypeData.Guid), ''']');
+  for i := 1 to ExtraData.MethodCount do
+    Writeln('    procedure UnknownName', i, ';');
+  Writeln('  end;');
+  Writeln;
+end;
 
 type
-  {$M-}
+{$M-}
   IMyInterface = interface
-    procedure Foo(A: integer);
+    procedure Foo(A: Integer);
     procedure Bar(const B: string);
-    procedure Nada(const C: array of integer; D: TObject);
-  end;  
+    procedure Nada(const C: array of Integer; D: TObject);
+  end;
+
   IMyDispatchInterface = interface(IDispatch)
     ['{9BC5459B-6C31-4F5B-B733-DCA8FC8C1345}']
     procedure Foo; dispid 0;
-  end;  
+  end;
+
   IMyDispInterface = dispinterface
     ['{8574E276-4671-49AC-B775-B299E6EF01C5}']
     procedure Bar;
-  end;  
+  end;
 
 begin
   DumpSimpleInterface(TypeInfo(IMyInterface));
   DumpSimpleInterface(TypeInfo(IMyDispatchInterface));
   DumpSimpleInterface(TypeInfo(IMyDispInterface));
-  readln;
-end.
+  Readln;
 
+end.

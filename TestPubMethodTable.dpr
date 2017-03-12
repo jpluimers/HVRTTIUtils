@@ -1,7 +1,7 @@
 program TestPubMethodTable;
- 
+
 {$APPTYPE CONSOLE}
- 
+
 uses
   Classes,
   SysUtils,
@@ -10,92 +10,95 @@ uses
 
 procedure DumpPublishedMethods(AClass: TClass);
 var
-  i : integer;
+  i: Integer;
   Method: PPublishedMethod;
 begin
   while Assigned(AClass) do
   begin
-    writeln('Published methods in ', AClass.ClassName);
-    for i := 0 to GetPublishedMethodCount(AClass)-1 do
+    Writeln('Published methods in ', AClass.ClassName);
+    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
     begin
       Method := GetPublishedMethod(AClass, i);
-      writeln(Format('%d. MethodAddr = %p, Name = %s',
-                     [i, Method.Address, Method.Name]));
+      Writeln(Format('%d. MethodAddr = %p, Name = %s', //
+        [i, Method.Address, Method.Name]));
     end;
     AClass := AClass.ClassParent;
   end;
 end;
- 
+
 procedure DumpPublishedMethodsFaster(AClass: TClass);
 var
-  i : integer;
+  i: Integer;
   Method: PPublishedMethod;
 begin
   while Assigned(AClass) do
   begin
-    writeln('Published methods in ', AClass.ClassName);
+    Writeln('Published methods in ', AClass.ClassName);
     Method := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass)-1 do
+    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
     begin
-      writeln(Format('%d. MethodAddr = %p, Name = %s',
-                     [i, Method.Address, Method.Name]));
+      Writeln(Format('%d. MethodAddr = %p, Name = %s', //
+        [i, Method.Address, Method.Name]));
       Method := GetNextPublishedMethod(AClass, Method);
     end;
     AClass := AClass.ClassParent;
   end;
 end;
- 
+
 type
-  {$M+}
+{$M+}
   TMyClass = class
   published
-    procedure FirstPublished; 
-    procedure SecondPublished(A: integer); 
-    procedure ThirdPublished(A: integer); stdcall; 
-    function FourthPublished(A: TComponent): TComponent; stdcall; 
-    procedure FifthPublished(Component: TComponent); stdcall; 
-    function SixthPublished(A: string; Two, Three, Four, Five, Six: integer): string; pascal; 
+    procedure FirstPublished;
+    procedure SecondPublished(A: Integer);
+    procedure ThirdPublished(A: Integer); stdcall;
+    function FourthPublished(A: TComponent): TComponent; stdcall;
+    procedure FifthPublished(Component: TComponent); stdcall;
+    function SixthPublished(A: string; Two, Three, Four, Five, Six: Integer): string; pascal;
   end;
- 
-procedure TMyClass.FirstPublished; 
-begin 
+
+procedure TMyClass.FirstPublished;
+begin
 end;
-procedure TMyClass.SecondPublished; 
-begin 
+
+procedure TMyClass.SecondPublished;
+begin
 end;
-procedure TMyClass.ThirdPublished; 
-begin 
+
+procedure TMyClass.ThirdPublished;
+begin
 end;
+
 function TMyClass.FourthPublished;
-begin 
+begin
   Result := nil;
 end;
+
 procedure TMyClass.FifthPublished;
 begin
 end;
+
 function TMyClass.SixthPublished;
-begin 
+begin
 end;
- 
+
 procedure DumpMethod(Method: PPublishedMethod);
 begin
-  if Assigned(Method) 
-  then Writeln(Format('%p=%s', [Method.Address, Method.Name]))
-  else Writeln('nil');
+  if Assigned(Method) then
+    Writeln(Format('%p=%s', [Method.Address, Method.Name]))
+  else
+    Writeln('nil');
 end;
- 
+
 procedure Test;
 begin
   DumpPublishedMethods(TMyClass);
   DumpPublishedMethodsFaster(TMyClass);
   DumpMethod(FindPublishedMethodByName(TMyClass, 'FirstPublished'));
-  DumpMethod(FindPublishedMethodByName(TMyClass, 
-    FindPublishedMethodName(TMyClass, @TMyClass.SecondPublished)));
+  DumpMethod(FindPublishedMethodByName(TMyClass, FindPublishedMethodName(TMyClass, @TMyClass.SecondPublished)));
   DumpMethod(FindPublishedMethodByAddr(TMyClass, @TMyClass.ThirdPublished));
-  DumpMethod(FindPublishedMethodByAddr(TMyClass, 
-    FindPublishedMethodAddr(TMyClass, 'FourthPublished')));
-  DumpMethod(FindPublishedMethodByAddr(TMyClass, 
-    FindPublishedMethodByName(TMyClass, 'FifthPublished').Address));
+  DumpMethod(FindPublishedMethodByAddr(TMyClass, FindPublishedMethodAddr(TMyClass, 'FourthPublished')));
+  DumpMethod(FindPublishedMethodByAddr(TMyClass, FindPublishedMethodByName(TMyClass, 'FifthPublished').Address));
   DumpMethod(FindPublishedMethodByAddr(TMyClass, @TMyClass.SixthPublished));
   DumpMethod(FindPublishedMethodByName(TMyClass, 'NotThere'));
   DumpMethod(FindPublishedMethodByAddr(TMyClass, nil));
@@ -103,7 +106,6 @@ end;
 
 begin
   Test;
-  readln;
+  Readln;
+
 end.
-
-

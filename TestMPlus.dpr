@@ -7,7 +7,7 @@ uses
   TypInfo;
 
 type
-  {$M-}
+{$M-}
   TMMinus = class
     DefField: TObject;
     property DefProp: TObject read DefField write DefField;
@@ -17,7 +17,8 @@ type
     property PubProp: TObject read PubField write PubField;
     procedure PubMethod;
   end;
-  {$M+}
+{$M+}
+
   TMPlus = class
     DefField: TObject;
     property DefProp: TObject read DefField write DefField;
@@ -27,15 +28,26 @@ type
     property PubProp: TObject read PubField write PubField;
     procedure PubMethod;
   end;
- 
-procedure TMMinus.DefMethod; begin end;
-procedure TMMinus.PubMethod; begin end;
-procedure TMPlus.DefMethod; begin end;
-procedure TMPlus.PubMethod; begin end;
- 
+
+procedure TMMinus.DefMethod;
+begin
+end;
+
+procedure TMMinus.PubMethod;
+begin
+end;
+
+procedure TMPlus.DefMethod;
+begin
+end;
+
+procedure TMPlus.PubMethod;
+begin
+end;
+
 procedure DumpMClass(AClass: TClass);
 begin
-  Writeln(Format('Testing %s:', [AClass.Classname]));
+  Writeln(Format('Testing %s:', [AClass.ClassName]));
   Writeln(Format('DefField=%p', [AClass.Create.FieldAddress('DefField')]));
   Writeln(Format('DefProp=%p', [TypInfo.GetPropInfo(AClass, 'DefProp')]));
   Writeln(Format('DefMethod=%p', [AClass.MethodAddress('DefMethod')]));
@@ -48,5 +60,6 @@ end;
 begin
   DumpMClass(TMMinus);
   DumpMClass(TMPlus);
-  readln;
+  Readln;
+
 end.

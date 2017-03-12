@@ -11,8 +11,8 @@ uses
 
 procedure DumpPublishedFields(AClass: TClass); overload;
 var
-  i : integer;
-  Count: integer;
+  i: Integer;
+  Count: Integer;
   Field: PPublishedField;
   FieldType: TClass;
   ParentClass: string;
@@ -22,22 +22,23 @@ begin
     Count := GetPublishedFieldCount(AClass);
     if Count > 0 then
     begin
-      if AClass.ClassParent <> nil 
-      then ParentClass := '('+AClass.ClassParent.ClassName+')'
-      else ParentClass := '';
-      writeln('type');
-      writeln('  ', AClass.ClassName, ' = class', ParentClass);
-      writeln('  published');
+      if AClass.ClassParent <> nil then
+        ParentClass := '(' + AClass.ClassParent.ClassName + ')'
+      else
+        ParentClass := '';
+      Writeln('type');
+      Writeln('  ', AClass.ClassName, ' = class', ParentClass);
+      Writeln('  published');
       Field := GetFirstPublishedField(AClass);
-      for i := 0 to Count-1 do
+      for i := 0 to Count - 1 do
       begin
-        FieldType  := GetPublishedFieldType(AClass, Field);
-        writeln(Format('    %s: %s; // Offs=%d, Index=%d',
+        FieldType := GetPublishedFieldType(AClass, Field);
+        Writeln(Format('    %s: %s; // Offs=%d, Index=%d', //
           [Field.Name, FieldType.ClassName, Field.Offset, Field.TypeIndex]));
         Field := GetNextPublishedField(AClass, Field);
       end;
-      writeln('  end;');
-      writeln;
+      Writeln('  end;');
+      Writeln;
     end;
     AClass := AClass.ClassParent;
   end;
@@ -45,8 +46,8 @@ end;
 
 procedure DumpPublishedFields(Instance: TObject); overload;
 var
-  i : integer;
-  Count: integer;
+  i: Integer;
+  Count: Integer;
   Field: PPublishedField;
   AClass: TClass;
   FieldValue: TObject;
@@ -59,32 +60,32 @@ begin
     Count := GetPublishedFieldCount(AClass);
     if Count > 0 then
     begin
-      if AClass.ClassParent <> nil 
-      then ParentClass := '('+AClass.ClassParent.ClassName+')'
-      else ParentClass := '';
-      writeln('type');
-      writeln('  ', AClass.ClassName, ' = class', ParentClass);
-      writeln('  published');
+      if AClass.ClassParent <> nil then
+        ParentClass := '(' + AClass.ClassParent.ClassName + ')'
+      else
+        ParentClass := '';
+      Writeln('type');
+      Writeln('  ', AClass.ClassName, ' = class', ParentClass);
+      Writeln('  published');
       Field := GetFirstPublishedField(AClass);
-      for i := 0 to Count-1 do
+      for i := 0 to Count - 1 do
       begin
-        FieldType  := GetPublishedFieldType(AClass, Field);
+        FieldType := GetPublishedFieldType(AClass, Field);
         FieldValue := GetPublishedFieldValue(Instance, Field);
-        writeln(Format('    %s: %s; // Offs=%d, Index=%d, Value=%p',
-                       [Field.Name, FieldType.ClassName, Field.Offset, Field.TypeIndex,
-                       Pointer(FieldValue)]));
+        Writeln(Format('    %s: %s; // Offs=%d, Index=%d, Value=%p', //
+          [Field.Name, FieldType.ClassName, Field.Offset, Field.TypeIndex, //
+          Pointer(FieldValue)]));
         Field := GetNextPublishedField(AClass, Field);
       end;
-      writeln('  end;');
-      writeln;
+      Writeln('  end;');
+      Writeln;
     end;
     AClass := AClass.ClassParent;
   end;
 end;
 
-
 type
-  {$M+}
+{$M+}
   TMyClass = class
   published
     A: TObject;
@@ -118,5 +119,6 @@ end;
 
 begin
   Test;
-  readln;
+  Readln;
+
 end.

@@ -7,37 +7,37 @@ uses
 
 type
   PClass = ^TClass;
-  PSafeCallException = function  (Self: TObject; ExceptObject:
-    TObject; ExceptAddr: Pointer): HResult;
-  PAfterConstruction = procedure (Self: TObject);
-  PBeforeDestruction = procedure (Self: TObject);
-  PDispatch          = procedure (Self: TObject; var Message);
-  PDefaultHandler    = procedure (Self: TObject; var Message);
-  PNewInstance       = function  (Self: TClass) : TObject;
-  PFreeInstance      = procedure (Self: TObject);
-  PDestroy           = procedure (Self: TObject; OuterMost: ShortInt);
+  PSafeCallException = function(Self: TObject; ExceptObject: TObject; ExceptAddr: Pointer): HResult;
+  PAfterConstruction = procedure(Self: TObject);
+  PBeforeDestruction = procedure(Self: TObject);
+  PDispatch = procedure(Self: TObject; var Message);
+  PDefaultHandler = procedure(Self: TObject; var Message);
+  PNewInstance = function(Self: TClass): TObject;
+  PFreeInstance = procedure(Self: TObject);
+  PDestroy = procedure(Self: TObject; OuterMost: ShortInt);
   PVmt = ^TVmt;
+
   TVmt = packed record
-    SelfPtr           : TClass;
-    IntfTable         : Pointer;
-    AutoTable         : Pointer;
-    InitTable         : Pointer;
-    TypeInfo          : Pointer;
-    FieldTable        : Pointer;
-    MethodTable       : Pointer;
-    DynamicTable      : Pointer;
-    ClassName         : PShortString;
-    InstanceSize      : PLongint;
-    Parent            : PClass;
-    SafeCallException : PSafeCallException;
-    AfterConstruction : PAfterConstruction;
-    BeforeDestruction : PBeforeDestruction;
-    Dispatch          : PDispatch;
-    DefaultHandler    : PDefaultHandler;
-    NewInstance       : PNewInstance;
-    FreeInstance      : PFreeInstance;
-    Destroy           : PDestroy;
-   {UserDefinedVirtuals: array[0..999] of procedure;}
+    SelfPtr: TClass;
+    IntfTable: Pointer;
+    AutoTable: Pointer;
+    InitTable: Pointer;
+    TypeInfo: Pointer;
+    FieldTable: Pointer;
+    MethodTable: Pointer;
+    DynamicTable: Pointer;
+    ClassName: PShortString;
+    InstanceSize: PLongint;
+    Parent: PClass;
+    SafeCallException: PSafeCallException;
+    AfterConstruction: PAfterConstruction;
+    BeforeDestruction: PBeforeDestruction;
+    Dispatch: PDispatch;
+    DefaultHandler: PDefaultHandler;
+    NewInstance: PNewInstance;
+    FreeInstance: PFreeInstance;
+    Destroy: PDestroy;
+    { UserDefinedVirtuals: array[0..999] of procedure; }
   end;
 
 function GetVmt(AClass: TClass): PVmt; overload;
@@ -53,8 +53,7 @@ end;
 
 type
   TMyClass = class
-    function SafeCallException(ExceptObject: TObject;
-      ExceptAddr: Pointer): HResult; override;
+    function SafeCallException(ExceptObject: TObject; ExceptAddr: Pointer): HResult; override;
     procedure AfterConstruction; override;
     procedure BeforeDestruction; override;
     procedure Dispatch(var Message); override;
@@ -62,24 +61,25 @@ type
     class function NewInstance: TObject; override;
     procedure FreeInstance; override;
     destructor Destroy; override;
-    procedure MethodA(var A: integer); virtual;
-    procedure MethodB(out A: integer); virtual; abstract;
-    function MethodC: integer; virtual;
+    procedure MethodA(var A: Integer); virtual;
+    procedure MethodB(out A: Integer); virtual; abstract;
+    function MethodC: Integer; virtual;
     procedure Method; virtual;
   end;
+
   TMyDescendent = class(TMyClass)
-    procedure MethodA(var A: integer); override;
-    procedure MethodB(out A: integer); override;
-    function MethodC: integer; override;
+    procedure MethodA(var A: Integer); override;
+    procedure MethodB(out A: Integer); override;
+    function MethodC: Integer; override;
     procedure Method; override;
   end;
 
-function MyMethodOffset: integer;
+function MyMethodOffset: Integer;
 asm
   MOV EAX, VMTOFFSET TMyClass.Method
 end;
 
-function MyMethodIndex: integer;
+function MyMethodIndex: Integer;
 begin
   Result := MyMethodOffset div SizeOf(Pointer);
 end;
@@ -93,62 +93,63 @@ end;
 procedure TMyClass.AfterConstruction;
 begin
   inherited;
-  writeln(ClassName, '.AfterConstruction');
+  Writeln(ClassName, '.AfterConstruction');
 end;
 
 procedure TMyClass.BeforeDestruction;
 begin
-  writeln(ClassName, '.BeforeDestruction');
+  Writeln(ClassName, '.BeforeDestruction');
   inherited;
 end;
 
 procedure TMyClass.DefaultHandler(var Message);
 begin
   inherited;
-  writeln(ClassName, '.DefaultHandler');
+  Writeln(ClassName, '.DefaultHandler');
 end;
 
 destructor TMyClass.Destroy;
 begin
-  writeln(ClassName, '.Destroy');
+  Writeln(ClassName, '.Destroy');
   inherited;
 end;
 
 procedure TMyClass.Dispatch(var Message);
 begin
   inherited;
-  writeln(ClassName, '.Dispatch');
+  Writeln(ClassName, '.Dispatch');
 end;
 
 procedure TMyClass.FreeInstance;
 begin
-  writeln(ClassName, '.FreeInstance');
+  Writeln(ClassName, '.FreeInstance');
   inherited;
 end;
 
 class function TMyClass.NewInstance: TObject;
 begin
   Result := inherited NewInstance;
-  writeln(ClassName, '.NewInstance');
+  Writeln(ClassName, '.NewInstance');
 end;
 
 function TMyClass.SafeCallException(ExceptObject: TObject; ExceptAddr: Pointer): HResult;
 begin
   Result := inherited SafeCallException(ExceptObject, ExceptAddr);
-  writeln(ClassName, '.SafeCallException');
+  Writeln(ClassName, '.SafeCallException');
 end;
 
 procedure TMyClass.Method;
 begin
-  writeln(ClassName, '.Method');
+  Writeln(ClassName, '.Method');
 end;
 
-procedure TMyClass.MethodA(var A: integer);
+procedure TMyClass.MethodA(var A: Integer);
 begin
 
 end;
 
 {$WARNINGS OFF} // Ignore abstract method warnings
+
 procedure Test;
 var
   Instance: TMyClass;
@@ -159,9 +160,9 @@ begin
   Instance := TMyClass.Create;
   Vmt := GetVmt(Instance);
   Writeln('Calling virtual methods explicitly through an obtained VMT pointer (playing the compiler):');
-  writeln('SelfPtr = ', Vmt.SelfPtr.Classname);
-  writeln('Parent = ', Vmt.Parent^.Classname);
-  writeln(Vmt.Classname^);
+  Writeln('SelfPtr = ', Vmt.SelfPtr.ClassName);
+  Writeln('Parent = ', Vmt.Parent^.ClassName);
+  Writeln(Vmt.ClassName^);
   Vmt^.SafeCallException(Instance, nil, nil);
   Vmt^.AfterConstruction(Instance);
   Vmt^.BeforeDestruction(Instance);
@@ -171,7 +172,7 @@ begin
   Instance2 := Vmt^.NewInstance(TMyClass) as TMyClass;
   Instance.Destroy;
   Vmt^.Destroy(Instance2, 1);
-  readln;
+  Readln;
 end;
 
 procedure Test2;
@@ -179,19 +180,18 @@ var
   Instance: TMyClass;
 begin
   Instance := TMyClass.Create;
-  writeln('VMT offset of Method: ', MyMethodOffset);
-  writeln('VMT Index of Method: ', MyMethodIndex);
+  Writeln('VMT offset of Method: ', MyMethodOffset);
+  Writeln('VMT Index of Method: ', MyMethodIndex);
   CallMyMethod(Instance);
-  readln;
+  Readln;
 end;
-{$WARNINGS ON} 
-
-{procedure TMyClass.MethodB(out A: integer);
-begin
+{$WARNINGS ON}
+{ procedure TMyClass.MethodB(out A: Integer);
+  begin
   A := 42;
-end;}
+  end; }
 
-function TMyClass.MethodC: integer;
+function TMyClass.MethodC: Integer;
 begin
   Result := 43;
 end;
@@ -204,40 +204,40 @@ begin
 
 end;
 
-procedure TMyDescendent.MethodA(var A: integer);
+procedure TMyDescendent.MethodA(var A: Integer);
 begin
   inherited;
 
 end;
 
-procedure TMyDescendent.MethodB(out A: integer);
+procedure TMyDescendent.MethodB(out A: Integer);
 begin
   inherited;
   Writeln(A);
 end;
 
-function TMyDescendent.MethodC: integer;
+function TMyDescendent.MethodC: Integer;
 begin
-//  inherited; // Error
-//  Result := inherited; // Error
+  // inherited; // Error
+  // Result := inherited; // Error
   Result := inherited MethodC; // Ok
 end;
 
 procedure Test3;
 var
   Instance: TMyClass;
-  A: integer;
+  A: Integer;
 begin
   Instance := TMyDescendent.Create;
   A := 123;
   Instance.MethodB(A);
-  readln;
+  Readln;
 end;
+
 begin
   Test;
   Test3;
-//  Test;
-//  Test2;
+
+  // Test;
+  // Test2;
 end.
-
-

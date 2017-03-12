@@ -3,7 +3,9 @@ program TestMethodTable;
 {$APPTYPE CONSOLE}
 
 uses
-  Classes, SysUtils, TypInfo;
+  Classes,
+  SysUtils,
+  TypInfo;
 
 {class }function TObject_MethodAddress(const Name: ShortString): Pointer;
 asm
@@ -62,7 +64,7 @@ asm
         POP     EBX
 end;
 
-{class} function TObject_MethodName(Address: Pointer): ShortString;
+{class}function TObject_MethodName(Address: Pointer): ShortString;
 asm
         { ->    EAX     Pointer to class        }
         {       EDX     Address         }
@@ -111,67 +113,74 @@ end;
 
 type
   PClass = ^TClass;
-  PSafeCallException = function  (Self: TObject; ExceptObject: TObject;
-                         ExceptAddr: Pointer): HResult;
-  PAfterConstruction = procedure (Self: TObject);
-  PBeforeDestruction = procedure (Self: TObject);
-  PDispatch          = procedure (Self: TObject; var Message);
-  PDefaultHandler    = procedure (Self: TObject; var Message);
-  PNewInstance       = function  (Self: TClass) : TObject;
-  PFreeInstance      = procedure (Self: TObject);
-  PDestroy           = procedure (Self: TObject; OuterMost: ShortInt);
-  TDMTIndex   = Smallint;
+  PSafeCallException = function(Self: TObject; ExceptObject: TObject; ExceptAddr: Pointer): HResult;
+  PAfterConstruction = procedure(Self: TObject);
+  PBeforeDestruction = procedure(Self: TObject);
+  PDispatch = procedure(Self: TObject; var Message);
+  PDefaultHandler = procedure(Self: TObject; var Message);
+  PNewInstance = function(Self: TClass): TObject;
+  PFreeInstance = procedure(Self: TObject);
+  PDestroy = procedure(Self: TObject; OuterMost: ShortInt);
+  TDMTIndex = Smallint;
   PDmtIndices = ^TDmtIndices;
-  TDmtIndices = array[0..High(Word)-1] of TDMTIndex;
+  TDmtIndices = array [0 .. High(Word) - 1] of TDMTIndex;
   PDmtMethods = ^TDmtMethods;
-  TDmtMethods = array[0..High(Word)-1] of Pointer;
+  TDmtMethods = array [0 .. High(Word) - 1] of Pointer;
   PDmt = ^TDmt;
+
   TDmt = packed record
-    Count: word;
+    Count: Word;
     Indicies: TDmtIndices; // really [0..Count-1]
-    Methods : TDmtMethods; // really [0..Count-1]
+    Methods: TDmtMethods; // really [0..Count-1]
   end;
+
   PPublishedMethod = ^TPublishedMethod;
+
   TPublishedMethod = packed record
-    Size: word;  // Why this? Always equals: SizeOf(Size) + SizeOf(Address) + 1 + Length(Name)
+    Size: Word;
+    // Why this? Always equals: SizeOf(Size) + SizeOf(Address) + 1 + Length(Name)
     Address: Pointer;
-    Name: {packed} Shortstring;
+    Name: { packed } ShortString;
   end;
-  TPublishedMethods = array[0..High(Word)-1] of TPublishedMethod;
+
+  TPublishedMethods = array [0 .. High(Word) - 1] of TPublishedMethod;
   PPmt = ^TPmt;
+
   TPmt = packed record
     Count: Word;
     Methods: TPublishedMethods; // really [0..Count-1]
   end;
 
   PVmt = ^TVmt;
+
   TVmt = packed record
-    SelfPtr           : TClass;
-    IntfTable         : Pointer;
-    AutoTable         : Pointer;
-    InitTable         : Pointer;
-    TypeInfo          : Pointer;
-    FieldTable        : Pointer;
-    MethodTable       : PPmt;
-    DynamicTable      : PDmt;
-    ClassName         : PShortString;
-    InstanceSize      : PLongint;
-    Parent            : PClass;
-    SafeCallException : PSafeCallException;
-    AfterConstruction : PAfterConstruction;
-    BeforeDestruction : PBeforeDestruction;
-    Dispatch          : PDispatch;
-    DefaultHandler    : PDefaultHandler;
-    NewInstance       : PNewInstance;
-    FreeInstance      : PFreeInstance;
-    Destroy           : PDestroy;
-   {UserDefinedVirtuals: array[0..999] of procedure;}
+    SelfPtr: TClass;
+    IntfTable: Pointer;
+    AutoTable: Pointer;
+    InitTable: Pointer;
+    TypeInfo: Pointer;
+    FieldTable: Pointer;
+    MethodTable: PPmt;
+    DynamicTable: PDmt;
+    ClassName: PShortString;
+    InstanceSize: PLongint;
+    Parent: PClass;
+    SafeCallException: PSafeCallException;
+    AfterConstruction: PAfterConstruction;
+    BeforeDestruction: PBeforeDestruction;
+    Dispatch: PDispatch;
+    DefaultHandler: PDefaultHandler;
+    NewInstance: PNewInstance;
+    FreeInstance: PFreeInstance;
+    Destroy: PDestroy;
+    { UserDefinedVirtuals: array[0..999] of procedure; }
   end;
+
   // For easier use of the "dynamic" arrays
   TDynamicMethodTable = record
-    Count: word;
+    Count: Word;
     Indicies: PDmtIndices; // really [0..Count-1]
-    Methods : PDmtMethods; // really [0..Count-1]
+    Methods: PDmtMethods; // really [0..Count-1]
   end;
 
 function GetVmt(AClass: TClass): PVmt;
@@ -185,9 +194,10 @@ var
   Vmt: PVmt;
 begin
   Vmt := GetVmt(AClass);
-  if Assigned(Vmt)
-  then Result := Vmt.DynamicTable
-  else Result := nil;
+  if Assigned(Vmt) then
+    Result := Vmt.DynamicTable
+  else
+    Result := nil;
 end;
 
 function GetPmt(AClass: TClass): PPmt;
@@ -195,22 +205,24 @@ var
   Vmt: PVmt;
 begin
   Vmt := GetVmt(AClass);
-  if Assigned(Vmt)
-  then Result := Vmt.MethodTable
-  else Result := nil;
+  if Assigned(Vmt) then
+    Result := Vmt.MethodTable
+  else
+    Result := nil;
 end;
 
-function GetPublishedMethodCount(AClass: TClass): integer;
+function GetPublishedMethodCount(AClass: TClass): Integer;
 var
   Pmt: PPmt;
 begin
   Pmt := GetPmt(AClass);
-  if Assigned(Pmt)
-  then Result := Pmt.Count
-  else Result := 0;
+  if Assigned(Pmt) then
+    Result := Pmt.Count
+  else
+    Result := 0;
 end;
 
-function GetPublishedMethod(AClass: TClass; Index: integer): PPublishedMethod;
+function GetPublishedMethod(AClass: TClass; Index: Integer): PPublishedMethod;
 var
   Pmt: PPmt;
 begin
@@ -243,17 +255,17 @@ end;
 
 procedure DumpPublishedMethods(AClass: TClass);
 var
-  i : integer;
+  i: Integer;
   Method: PPublishedMethod;
 begin
   while Assigned(AClass) do
   begin
-    writeln('Published methods in ', AClass.ClassName);
-    for i := 0 to GetPublishedMethodCount(AClass)-1 do
+    Writeln('Published methods in ', AClass.ClassName);
+    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
     begin
       Method := GetPublishedMethod(AClass, i);
-      writeln(Format('%d. MethodAddr = %p, Name = %s',
-                     [i, Method.Address, Method.Name]));
+      Writeln(Format('%d. MethodAddr = %p, Name = %s', //
+        [i, Method.Address, Method.Name]));
     end;
     AClass := AClass.ClassParent;
   end;
@@ -261,17 +273,17 @@ end;
 
 procedure DumpPublishedMethods2(AClass: TClass);
 var
-  i : integer;
+  i: Integer;
   Method: PPublishedMethod;
 begin
   while Assigned(AClass) do
   begin
-    writeln('Published methods in ', AClass.ClassName);
+    Writeln('Published methods in ', AClass.ClassName);
     Method := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass)-1 do
+    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
     begin
-      writeln(Format('%d. MethodAddr = %p, Name = %s',
-                     [i, Method.Address, Method.Name]));
+      Writeln(Format('%d. MethodAddr = %p, Name = %s', //
+        [i, Method.Address, Method.Name]));
       Method := GetNextPublishedMethod(AClass, Method);
     end;
     AClass := AClass.ClassParent;
@@ -280,16 +292,17 @@ end;
 
 function FindPublishedMethodByName(AClass: TClass; const AName: ShortString): PPublishedMethod;
 var
-  i : integer;
+  i: Integer;
 begin
   while Assigned(AClass) do
   begin
     Result := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass)-1 do
+    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
     begin
       // Note: Length(ShortString) expands to efficient inline code
-      if (Length(Result.Name) = Length(AName)) and
-         (StrLIComp(@Result.Name[1], @AName[1], Length(AName)) = 0) then
+      if (Length(Result.Name) = Length(AName)) and //
+        (StrLIComp(@Result.Name[1], @AName[1], Length(AName)) = 0) //
+	  then
         Exit;
       Result := GetNextPublishedMethod(AClass, Result);
     end;
@@ -300,12 +313,12 @@ end;
 
 function FindPublishedMethodByAddr(AClass: TClass; AAddr: Pointer): PPublishedMethod;
 var
-  i : integer;
+  i: Integer;
 begin
   while Assigned(AClass) do
   begin
     Result := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass)-1 do
+    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
     begin
       if Result.Address = AAddr then
         Exit;
@@ -321,19 +334,21 @@ var
   Method: PPublishedMethod;
 begin
   Method := FindPublishedMethodByName(AClass, AName);
-  if Assigned(Method)
-  then Result := Method.Address
-  else Result := nil;
+  if Assigned(Method) then
+    Result := Method.Address
+  else
+    Result := nil;
 end;
 
-function FindPublishedMethodName(AClass: TClass; AAddr: Pointer): Shortstring;
+function FindPublishedMethodName(AClass: TClass; AAddr: Pointer): ShortString;
 var
   Method: PPublishedMethod;
 begin
   Method := FindPublishedMethodByAddr(AClass, AAddr);
-  if Assigned(Method)
-  then Result := Method.Name
-  else Result := '';
+  if Assigned(Method) then
+    Result := Method.Name
+  else
+    Result := '';
 end;
 
 function FindDynamicMethod(AClass: TClass; DMTIndex: TDMTIndex): Pointer;
@@ -341,13 +356,13 @@ function FindDynamicMethod(AClass: TClass; DMTIndex: TDMTIndex): Pointer;
 var
   Dmt: PDmt;
   DmtMethods: PDmtMethods;
-  i: integer;
+  i: Integer;
 begin
   while Assigned(AClass) do
   begin
     Dmt := GetDmt(AClass);
     if Assigned(Dmt) then
-      for i := 0 to Dmt.Count-1 do
+      for i := 0 to Dmt.Count - 1 do
         if DMTIndex = Dmt.Indicies[i] then
         begin
           DmtMethods := @Dmt.Indicies[Dmt.Count];
@@ -366,9 +381,10 @@ procedure DumpFoundDynamicMethods(AClass: TClass);
     Proc: Pointer;
   begin
     Proc := FindDynamicMethod(AClass, DMTIndex);
-    writeln(Format('Dynamic Method Index = %2d, Method = %p',
-                   [DMTIndex, Proc]));
+    Writeln(Format('Dynamic Method Index = %2d, Method = %p', //
+      [DMTIndex, Proc]));
   end;
+
 begin
   Dump(-1);
   Dump(1);
@@ -377,22 +393,20 @@ begin
 end;
 
 type
-  {.$M+} // Compiler bug: includes published methods in VMT RTTI info even in $M- mode!!
-  {$M-}
-
+  {.$M+}// Compiler bug: includes published methods in VMT RTTI info even in $M- mode!!
+{$M-}
   // From impl. of Classes unit:
   TPropFixup = class
   public
-    FInstance: integer;
+    FInstance: Integer;
   published
     function MakeGlobalReference: Boolean;
   end;
 
-
   TMyClass = class
-//    I: integer; // Not allowed in $M+ mode
-//  public // Note: default access level is published
-    procedure FirstDynamic; dynamic;     // This could have RTTI depending on $M+
+    // I: Integer; // Not allowed in $M+ mode
+    // public // Note: default access level is published
+    procedure FirstDynamic; dynamic; // This could have RTTI depending on $M+
     procedure SecondDynamic; dynamic; abstract;
     class procedure ThirdDynamic; dynamic;
     class procedure FourthDynamic; dynamic;
@@ -400,79 +414,81 @@ type
   private
     FA: Integer;
   published // These *always* have RTTI, even in $M-! Bug?
-    constructor Create;  // "Bug": ignores published constructor and destructors
+    constructor Create; // "Bug": ignores published constructor and destructors
     destructor Destroy; override;
     procedure MsgHandler(var Msg); message 1;
     procedure FirstPublished; virtual; abstract;
-    procedure SecondPublished(A: integer); virtual; abstract;
-    procedure ThirdPublished(A: integer)  stdcall; virtual; abstract;
+    procedure SecondPublished(A: Integer); virtual; abstract;
+    procedure ThirdPublished(A: Integer)stdcall; virtual; abstract;
     function FourthPublished(A: string): string stdcall; virtual; abstract;
-    procedure ThirdPublished2(A: integer)  cdecl; virtual; abstract;
+    procedure ThirdPublished2(A: Integer)cdecl; virtual; abstract;
     function FourthPublished2(A: string): string pascal; virtual; abstract;
     // properties only have RTTI in $M+ mode
-    property A: integer read FA write FA;
+    property A: Integer read FA write FA;
   end;
+
   TMyDescendent = class(TMyClass)
-//  public
+    // public
     procedure FirstDynamic; override;
   published
     procedure SecondDynamic; override;
     class procedure ThirdDynamic; override;
     class procedure FourthDynamic; override;
   end;
+
   TMyDescendent2 = class(TMyClass)
   end;
 
 procedure TMyClass.FirstDynamic;
 begin
   inherited;
-//  Writeln(Classname, ': TMyClass.FirstDynamic');
+  // Writeln(ClassName, ': TMyClass.FirstDynamic');
 end;
 
-{procedure TMyClass.SecondDynamic;
-begin
-  Writeln(Classname, '.SecondDynamic');
-end;}
+{ procedure TMyClass.SecondDynamic;
+  begin
+  Writeln(ClassName, '.SecondDynamic');
+  end; }
 
 class procedure TMyClass.ThirdDynamic;
 begin
-  Writeln(Classname, '.ThirdDynamic');
+  Writeln(ClassName, '.ThirdDynamic');
 end;
 
 class procedure TMyClass.FourthDynamic;
 begin
-  Writeln(Classname, '.FourthDynamic');
+  Writeln(ClassName, '.FourthDynamic');
 end;
 
 procedure TMyClass.MessageMethod(var Msg);
 begin
   inherited; // Special case - calls TObject.DefaultHandler
-  Writeln(Classname, '.MessageMethod');
+  Writeln(ClassName, '.MessageMethod');
 end;
 
 procedure TMyDescendent.FirstDynamic;
 begin
-//  Writeln(Classname, ': TMyDescendent.FirstDynamic');
+  // Writeln(ClassName, ': TMyDescendent.FirstDynamic');
 end;
 
 procedure TMyDescendent.SecondDynamic;
 begin
   inherited;
-  Writeln(Classname, '.SecondDynamic');
+  Writeln(ClassName, '.SecondDynamic');
 end;
 
 class procedure TMyDescendent.ThirdDynamic;
 begin
-  Writeln(Classname, '.ThirdDynamic');
+  Writeln(ClassName, '.ThirdDynamic');
 end;
 
 class procedure TMyDescendent.FourthDynamic;
 begin
   inherited;
-  Writeln(Classname, '.FourthDynamic');
+  Writeln(ClassName, '.FourthDynamic');
 end;
 
-function MyDynamicMethodIndex: integer;
+function MyDynamicMethodIndex: Integer;
 asm
   MOV EAX, DMTIndex TMyClass.FirstDynamic
 end;
@@ -490,28 +506,28 @@ end;
 
 procedure SlowDynamicLoop(Instance: TMyClass);
 var
-  i: integer;
+  i: Integer;
 begin
-   for i := 0 to 1000000 do
-     Instance.FirstDynamic;
+  for i := 0 to 1000000 do
+    Instance.FirstDynamic;
 end;
 
 procedure FasterDynamicLoop(Instance: TMyClass);
 var
-  i: integer;
+  i: Integer;
   FirstDynamic: procedure of object;
 begin
   FirstDynamic := Instance.FirstDynamic;
-   for i := 0 to 1000000 do
-     FirstDynamic;
+  for i := 0 to 1000000 do
+    FirstDynamic;
 end;
 
 procedure SlowDynamicListLoop(Instances: TList);
 var
-  i: integer;
+  i: Integer;
   Instance: TMyClass;
 begin
-  for i := 0 to Instances.Count-1 do
+  for i := 0 to Instances.Count - 1 do
   begin
     Instance := Instances.List[i];
     Instance.FirstDynamic;
@@ -520,20 +536,20 @@ end;
 
 procedure FasterDynamicListLoop(Instances: TList);
 var
-  i: integer;
+  i: Integer;
   Instance: TMyClass;
   FirstDynamic: procedure(Self: TObject);
 begin
   FirstDynamic := @TMyClass.FirstDynamic;
-  for i := 0 to Instances.Count-1 do
+  for i := 0 to Instances.Count - 1 do
   begin
     Instance := Instances.List[i];
-    Assert(Instance.ClassType=TMyClass);
+    Assert(Instance.ClassType = TMyClass);
     FirstDynamic(Instance);
   end;
 end;
 
-function TMyClassFirstDynamicNotOverridden(Instance: TMyClass): boolean;
+function TMyClassFirstDynamicNotOverridden(Instance: TMyClass): Boolean;
 var
   FirstDynamic: procedure of object;
 begin
@@ -545,12 +561,12 @@ procedure FasterDynamicListLoop2(Instances: TList);
 type
   PMethod = TMethod;
 var
-  i: integer;
+  i: Integer;
   Instance: TMyClass;
-  FirstDynamic: procedure (Self: TObject);
+  FirstDynamic: procedure(Self: TObject);
 begin
   FirstDynamic := @TMyClass.FirstDynamic;
-  for i := 0 to Instances.Count-1 do
+  for i := 0 to Instances.Count - 1 do
   begin
     Instance := Instances.List[i];
     Assert(TObject(Instance) is TMyClass);
@@ -558,6 +574,7 @@ begin
     FirstDynamic(Instance);
   end;
 end;
+
 procedure DumpMethod(Method: PPublishedMethod);
 begin
   if Assigned(Method) then
@@ -570,7 +587,7 @@ procedure Test;
 begin
   DumpPublishedMethods(TMyDescendent);
   DumpPublishedMethods2(TMyDescendent);
-  writeln(Format('A=%p', [GetPropInfo(TMyDescendent, 'A')]));
+  Writeln(Format('A=%p', [GetPropInfo(TMyDescendent, 'A')]));
   DumpMethod(FindPublishedMethodByName(TMyDescendent, 'ThirdPublished'));
   DumpMethod(FindPublishedMethodByName(TMyDescendent, 'NotThere'));
   DumpMethod(FindPublishedMethodByAddr(TMyDescendent, @TMyDescendent.ThirdPublished));
@@ -605,11 +622,11 @@ end;
 
 begin
   try
-  Test;
+    Test;
   except
     on E: Exception do
-      writeln(E.MEssage);
+      Writeln(E.Message);
   end;
-  readln;
-end.
+  Readln;
 
+end.
