@@ -5,6 +5,11 @@ unit HVVMT;
 interface
 
 type
+  // For testing / typecasting at debug time
+  PAnsiChars = ^TAnsiChars;
+  TAnsiChars = array [0..4095] of AnsiChar;
+
+type
   PObject = ^TObject;
   PClass = ^TClass;
 
@@ -216,6 +221,7 @@ begin
 end;
 
 { .$DEFINE DEBUG }
+{$UNDEF DEBUG }
 function GetNextPublishedMethod(AClass: TClass; PublishedMethod: PPublishedMethod): PPublishedMethod;
 // Note: Caller is responsible for calling this the
 // correct number of times (using GetPublishedMethodCount)

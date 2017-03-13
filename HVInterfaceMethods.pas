@@ -99,8 +99,8 @@ begin
   ExtraData := Skip(@TypeData.IntfUnit);
 
   // Interface
-  InterfaceInfo.UnitName := TypeData.IntfUnit;
-  InterfaceInfo.Name := InterfaceTypeInfo.Name;
+  InterfaceInfo.UnitName := string(TypeData.IntfUnit);
+  InterfaceInfo.Name := string(InterfaceTypeInfo.Name);
   InterfaceInfo.Flags := TypeData.IntfFlags;
   InterfaceInfo.ParentInterface := Dereference(TypeData.IntfParent);
   InterfaceInfo.Guid := TypeData.Guid;
@@ -116,7 +116,7 @@ begin
   for i := Low(InterfaceInfo.Methods) to High(InterfaceInfo.Methods) do
   begin
     MethodInfo := @InterfaceInfo.Methods[i];
-    MethodInfo.Name := Skip(@MethodRTTI.Name, MethodRTTI)^;
+    MethodInfo.Name := string(Skip(@MethodRTTI.Name, MethodRTTI)^);
     MethodInfo.MethodKind := MethodRTTI.Kind;
     MethodInfo.CallConv := MethodRTTI.CallConv;
     MethodInfo.HasSignatureRTTI := True;
@@ -129,8 +129,8 @@ begin
     begin
       ParameterInfo := @MethodInfo.Parameters[j];
       ParameterInfo.Flags := ParameterRTTI.Flags;
-      ParameterInfo.ParamName := Skip(@ParameterRTTI.ParamName, ParameterRTTI)^;
-      ParameterInfo.TypeName := Skip(@ParameterRTTI.TypeName, ParameterRTTI)^;
+      ParameterInfo.ParamName := string(Skip(@ParameterRTTI.ParamName, ParameterRTTI)^);
+      ParameterInfo.TypeName := string(Skip(@ParameterRTTI.TypeName, ParameterRTTI)^);
       ParameterInfo.TypeInfo := Dereference(ParameterRTTI.TypeInfo);
       ParameterInfo.Location := plUnknown;
       ParameterRTTI := Skip(@ParameterRTTI.TypeInfo, SizeOf(ParameterRTTI.TypeInfo));
@@ -140,7 +140,7 @@ begin
     if MethodInfo.MethodKind = mkFunction then
     begin
       InterfaceResultRTTI := Pointer(ParameterRTTI);
-      MethodInfo.ResultTypeName := Skip(@InterfaceResultRTTI.Name, InterfaceResultRTTI)^;
+      MethodInfo.ResultTypeName := string(Skip(@InterfaceResultRTTI.Name, InterfaceResultRTTI)^);
       MethodInfo.ResultTypeInfo := Dereference(InterfaceResultRTTI.TypeInfo);
       MethodRTTI := Skip(@InterfaceResultRTTI.TypeInfo, SizeOf(InterfaceResultRTTI.TypeInfo));
     end

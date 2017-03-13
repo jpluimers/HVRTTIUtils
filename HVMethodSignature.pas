@@ -8,11 +8,15 @@ uses
   TypInfo,
   HVVMT;
 
-type  
+type
   TParamLocation = (plUnknown = -1, plEAX = 0, plEDX = 1, plECX = 2, plStack1 = 3, plStackN = $FFFF);
+{$IF Not Declared(TypInfo.TCallConv)}
   TCallConv = (ccReg, ccCdecl, ccPascal, ccStdCall, ccSafeCall);
+{$IFEND}
+{$IF Not Declared(TypInfo.TParamFlag)}
   TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
   TParamFlags = set of TParamFlag;
+{$IFEND}
   PMethodParam = ^TMethodParam;
 
   TMethodParam = record

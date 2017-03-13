@@ -89,10 +89,10 @@ begin
   begin
     MethodParam := @Result.Parameters[i];
     MethodParam.Flags := ParamListRecord.Flags;
-    MethodParam.ParamName := PackedShortString(@ParamListRecord.ParamName, ParamListRecord)^;
-    MethodParam.TypeName := PackedShortString(ParamListRecord)^;
+    MethodParam.ParamName := string(PackedShortString(@ParamListRecord.ParamName, ParamListRecord)^);
+    MethodParam.TypeName := string(PackedShortString(ParamListRecord)^);
   end;
-  Result.ResultTypeName := PackedShortString(ParamListRecord)^;
+  Result.ResultTypeName := string(PackedShortString(ParamListRecord)^);
 end;  
 
 function FindEventProperty(Instance: TObject; Code: Pointer): PPropInfo;
