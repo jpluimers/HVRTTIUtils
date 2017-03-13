@@ -11,7 +11,7 @@ uses
   ObjAuto,
   Windows,
   SoapHTTPPasInv,
-  WebSnapObjs,
+//  WebSnapObjs,
   HVVMT in 'HVVMT.pas',
   IntfInfo,
   HVPublishedMethodParams in 'HVPublishedMethodParams.pas',
