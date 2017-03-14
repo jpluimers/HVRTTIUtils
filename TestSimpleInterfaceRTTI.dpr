@@ -4,7 +4,8 @@ program TestSimpleInterfaceRTTI;
 
 uses
   SysUtils,
-  TypInfo;
+  TypInfo,
+  HVInterfaceMethods in 'HVInterfaceMethods.pas';
 
 (*
 type
@@ -25,44 +26,33 @@ type
   end;
 *)
 
-type
-  PExtraInterfaceData = ^TExtraInterfaceData;
-
-  TExtraInterfaceData = packed record
-    MethodCount: Word; { # methods }
-  end;
-
-function SkipPackedShortString(Value: PShortstring): pointer;
-begin
-  Result := Value;
-  Inc(PChar(Result), SizeOf(Value^[0]) + Length(Value^));
-end;
-
-procedure DumpSimpleInterface(InterfaceTypeInfo: PTypeInfo);
+procedure DumpSimpleInterface(const InterfaceTypeInfo: PTypeInfo);
 var
-  TypeData: PTypeData;
-  ExtraData: PExtraInterfaceData;
+  InterfaceInfo: TInterfaceInfo;
   i: Integer;
+  InterfaceFlags: TIntfFlags;
+  ParentInterface: PTypeInfo;
 begin
+  GetInterfaceInfo(InterfaceTypeInfo, InterfaceInfo);
   Assert(Assigned(InterfaceTypeInfo));
   Assert(InterfaceTypeInfo.Kind = tkInterface);
-  TypeData := GetTypeData(InterfaceTypeInfo);
-  ExtraData := SkipPackedShortString(@TypeData.IntfUnit);
-  Writeln('unit ', TypeData.IntfUnit, ';');
+  Writeln('unit ', InterfaceInfo.UnitName, ';');
   Writeln('type');
   Write('  ', InterfaceTypeInfo.Name, ' = ');
-  if not(ifDispInterface in TypeData.IntfFlags) then
+  InterfaceFlags := InterfaceInfo.Flags;
+  if not(ifDispInterface in InterfaceFlags) then
   begin
     Write('interface');
-    if Assigned(TypeData.IntfParent) then
-      Write(' (', TypeData.IntfParent^.Name, ')');
+    ParentInterface := InterfaceInfo.ParentInterface;
+    if Assigned(ParentInterface) then
+      Write(' (', ParentInterface^.Name, ')');
     Writeln;
   end
   else
     Writeln('dispinterface');
-  if ifHasGuid in TypeData.IntfFlags then
-    Writeln('    [''', GuidToString(TypeData.Guid), ''']');
-  for i := 1 to ExtraData.MethodCount do
+  if ifHasGuid in InterfaceFlags then
+    Writeln('    [''', GuidToString(InterfaceInfo.Guid), ''']');
+  for i := 1 to InterfaceInfo.MethodCount do
     Writeln('    procedure UnknownName', i, ';');
   Writeln('  end;');
   Writeln;
@@ -92,4 +82,28 @@ begin
   DumpSimpleInterface(TypeInfo(IMyDispInterface));
   Readln;
 
+  (* Expected output:
+
+unit TestSimpleInterfaceRTTI;
+type
+  IMyInterface = interface (IInterface)
+    procedure UnknownName1;
+    procedure UnknownName2;
+    procedure UnknownName3;
+  end;
+
+unit TestSimpleInterfaceRTTI;
+type
+  IMyDispatchInterface = interface (IDispatch)
+    ['{9BC5459B-6C31-4F5B-B733-DCA8FC8C1345}']
+    procedure UnknownName1;
+  end;
+
+unit TestSimpleInterfaceRTTI;
+type
+  IMyDispInterface = dispinterface
+    ['{8574E276-4671-49AC-B775-B299E6EF01C5}']
+    procedure UnknownName1;
+  end;
+  *)
 end.

@@ -3,9 +3,13 @@ program TestMethodTable;
 {$APPTYPE CONSOLE}
 
 uses
+{$IF CompilerVersion >= 25} // Delphi XE4 or newer
+  AnsiStrings,
+{$IFEND CompilerVersion >= 25}
   Classes,
   SysUtils,
-  TypInfo;
+  TypInfo,
+  HVVMT in 'HVVMT.pas';
 
 {class }function TObject_MethodAddress(const Name: ShortString): Pointer;
 asm
@@ -112,70 +116,6 @@ asm
 end;
 
 type
-  PClass = ^TClass;
-  PSafeCallException = function(Self: TObject; ExceptObject: TObject; ExceptAddr: Pointer): HResult;
-  PAfterConstruction = procedure(Self: TObject);
-  PBeforeDestruction = procedure(Self: TObject);
-  PDispatch = procedure(Self: TObject; var Message);
-  PDefaultHandler = procedure(Self: TObject; var Message);
-  PNewInstance = function(Self: TClass): TObject;
-  PFreeInstance = procedure(Self: TObject);
-  PDestroy = procedure(Self: TObject; OuterMost: ShortInt);
-  TDMTIndex = Smallint;
-  PDmtIndices = ^TDmtIndices;
-  TDmtIndices = array [0 .. High(Word) - 1] of TDMTIndex;
-  PDmtMethods = ^TDmtMethods;
-  TDmtMethods = array [0 .. High(Word) - 1] of Pointer;
-  PDmt = ^TDmt;
-
-  TDmt = packed record
-    Count: Word;
-    Indicies: TDmtIndices; // really [0..Count-1]
-    Methods: TDmtMethods; // really [0..Count-1]
-  end;
-
-  PPublishedMethod = ^TPublishedMethod;
-
-  TPublishedMethod = packed record
-    Size: Word;
-    // Why this? Always equals: SizeOf(Size) + SizeOf(Address) + 1 + Length(Name)
-    Address: Pointer;
-    Name: { packed } ShortString;
-  end;
-
-  TPublishedMethods = array [0 .. High(Word) - 1] of TPublishedMethod;
-  PPmt = ^TPmt;
-
-  TPmt = packed record
-    Count: Word;
-    Methods: TPublishedMethods; // really [0..Count-1]
-  end;
-
-  PVmt = ^TVmt;
-
-  TVmt = packed record
-    SelfPtr: TClass;
-    IntfTable: Pointer;
-    AutoTable: Pointer;
-    InitTable: Pointer;
-    TypeInfo: Pointer;
-    FieldTable: Pointer;
-    MethodTable: PPmt;
-    DynamicTable: PDmt;
-    ClassName: PShortString;
-    InstanceSize: PLongint;
-    Parent: PClass;
-    SafeCallException: PSafeCallException;
-    AfterConstruction: PAfterConstruction;
-    BeforeDestruction: PBeforeDestruction;
-    Dispatch: PDispatch;
-    DefaultHandler: PDefaultHandler;
-    NewInstance: PNewInstance;
-    FreeInstance: PFreeInstance;
-    Destroy: PDestroy;
-    { UserDefinedVirtuals: array[0..999] of procedure; }
-  end;
-
   // For easier use of the "dynamic" arrays
   TDynamicMethodTable = record
     Count: Word;
@@ -183,13 +123,7 @@ type
     Methods: PDmtMethods; // really [0..Count-1]
   end;
 
-function GetVmt(AClass: TClass): PVmt;
-begin
-  Result := PVmt(AClass);
-  Dec(Result);
-end;
-
-function GetDmt(AClass: TClass): PDmt;
+function GetDmt(const AClass: TClass): PDmt;
 var
   Vmt: PVmt;
 begin
@@ -200,155 +134,45 @@ begin
     Result := nil;
 end;
 
-function GetPmt(AClass: TClass): PPmt;
+procedure DumpPublishedMethods(const AClass: TClass);
 var
-  Vmt: PVmt;
-begin
-  Vmt := GetVmt(AClass);
-  if Assigned(Vmt) then
-    Result := Vmt.MethodTable
-  else
-    Result := nil;
-end;
-
-function GetPublishedMethodCount(AClass: TClass): Integer;
-var
-  Pmt: PPmt;
-begin
-  Pmt := GetPmt(AClass);
-  if Assigned(Pmt) then
-    Result := Pmt.Count
-  else
-    Result := 0;
-end;
-
-function GetPublishedMethod(AClass: TClass; Index: Integer): PPublishedMethod;
-var
-  Pmt: PPmt;
-begin
-  Pmt := GetPmt(AClass);
-  if Assigned(Pmt) and (Index < Pmt.Count) then
-  begin
-    Result := @Pmt.Methods[0];
-    while Index > 0 do
-    begin
-      Inc(PChar(Result), Result.Size);
-      Dec(Index);
-    end;
-  end
-  else
-    Result := nil;
-end;
-
-function GetFirstPublishedMethod(AClass: TClass): PPublishedMethod;
-begin
-  Result := GetPublishedMethod(AClass, 0);
-end;
-
-function GetNextPublishedMethod(AClass: TClass; PublishedMethod: PPublishedMethod): PPublishedMethod;
-// Note: Caller is responsible for calling this the correct number of times (using GetPublishedMethodCount)
-begin
-  Result := PublishedMethod;
-  if Assigned(Result) then
-    Inc(PChar(Result), Result.Size);
-end;
-
-procedure DumpPublishedMethods(AClass: TClass);
-var
+  CurrentClass: TClass;
   i: Integer;
   Method: PPublishedMethod;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Writeln('Published methods in ', AClass.ClassName);
-    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
+    Writeln('Published methods in ', CurrentClass.ClassName);
+    for i := 0 to GetPublishedMethodCount(CurrentClass) - 1 do
     begin
-      Method := GetPublishedMethod(AClass, i);
+      Method := GetPublishedMethod(CurrentClass, i);
       Writeln(Format('%d. MethodAddr = %p, Name = %s', //
         [i, Method.Address, Method.Name]));
     end;
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
 end;
 
-procedure DumpPublishedMethods2(AClass: TClass);
+procedure DumpPublishedMethods2(const AClass: TClass);
 var
+  CurrentClass: TClass;
   i: Integer;
   Method: PPublishedMethod;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Writeln('Published methods in ', AClass.ClassName);
-    Method := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
+    Writeln('Published methods in ', CurrentClass.ClassName);
+    Method := GetFirstPublishedMethod(CurrentClass);
+    for i := 0 to GetPublishedMethodCount(CurrentClass) - 1 do
     begin
       Writeln(Format('%d. MethodAddr = %p, Name = %s', //
         [i, Method.Address, Method.Name]));
-      Method := GetNextPublishedMethod(AClass, Method);
+      Method := GetNextPublishedMethod(CurrentClass, Method);
     end;
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
-end;
-
-function FindPublishedMethodByName(AClass: TClass; const AName: ShortString): PPublishedMethod;
-var
-  i: Integer;
-begin
-  while Assigned(AClass) do
-  begin
-    Result := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
-    begin
-      // Note: Length(ShortString) expands to efficient inline code
-      if (Length(Result.Name) = Length(AName)) and //
-        (StrLIComp(@Result.Name[1], @AName[1], Length(AName)) = 0) //
-	  then
-        Exit;
-      Result := GetNextPublishedMethod(AClass, Result);
-    end;
-    AClass := AClass.ClassParent;
-  end;
-  Result := nil;
-end;
-
-function FindPublishedMethodByAddr(AClass: TClass; AAddr: Pointer): PPublishedMethod;
-var
-  i: Integer;
-begin
-  while Assigned(AClass) do
-  begin
-    Result := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
-    begin
-      if Result.Address = AAddr then
-        Exit;
-      Result := GetNextPublishedMethod(AClass, Result);
-    end;
-    AClass := AClass.ClassParent;
-  end;
-  Result := nil;
-end;
-
-function FindPublishedMethodAddr(AClass: TClass; const AName: ShortString): Pointer;
-var
-  Method: PPublishedMethod;
-begin
-  Method := FindPublishedMethodByName(AClass, AName);
-  if Assigned(Method) then
-    Result := Method.Address
-  else
-    Result := nil;
-end;
-
-function FindPublishedMethodName(AClass: TClass; AAddr: Pointer): ShortString;
-var
-  Method: PPublishedMethod;
-begin
-  Method := FindPublishedMethodByAddr(AClass, AAddr);
-  if Assigned(Method) then
-    Result := Method.Name
-  else
-    Result := '';
 end;
 
 function FindDynamicMethod(AClass: TClass; DMTIndex: TDMTIndex): Pointer;
@@ -629,4 +453,45 @@ begin
   end;
   Readln;
 
+  { Expected output like (all nil values must be nil, all non nil values must be non-nil):
+
+Published methods in TMyDescendent
+0. MethodAddr = 004CEF28, Name = FirstDynamic
+1. MethodAddr = 004CEF2C, Name = SecondDynamic
+2. MethodAddr = 004CEFBC, Name = ThirdDynamic
+3. MethodAddr = 004CF048, Name = FourthDynamic
+Published methods in TMyClass
+0. MethodAddr = 004CF370, Name = MsgHandler
+1. MethodAddr = 004CEB48, Name = FirstPublished
+2. MethodAddr = 004CEB50, Name = SecondPublished
+3. MethodAddr = 004CEB58, Name = ThirdPublished
+4. MethodAddr = 004CEB60, Name = FourthPublished
+5. MethodAddr = 004CEB68, Name = ThirdPublished2
+6. MethodAddr = 004CEB70, Name = FourthPublished2
+Published methods in TObject
+Published methods in TMyDescendent
+0. MethodAddr = 004CEF28, Name = FirstDynamic
+1. MethodAddr = 004CEF2C, Name = SecondDynamic
+2. MethodAddr = 004CEFBC, Name = ThirdDynamic
+3. MethodAddr = 004CF048, Name = FourthDynamic
+Published methods in TMyClass
+0. MethodAddr = 004CF370, Name = MsgHandler
+1. MethodAddr = 004CEB48, Name = FirstPublished
+2. MethodAddr = 004CEB50, Name = SecondPublished
+3. MethodAddr = 004CEB58, Name = ThirdPublished
+4. MethodAddr = 004CEB60, Name = FourthPublished
+5. MethodAddr = 004CEB68, Name = ThirdPublished2
+6. MethodAddr = 004CEB70, Name = FourthPublished2
+Published methods in TObject
+A=004CEB16
+004CEB58=ThirdPublished
+nil
+004CEB58=ThirdPublished
+004CEB58=ThirdPublished
+nil
+004CEF28=FirstDynamic
+Published methods in TPropFixup
+0. MethodAddr = 004CF374, Name = MakeGlobalReference
+Published methods in TObject
+  }
 end.

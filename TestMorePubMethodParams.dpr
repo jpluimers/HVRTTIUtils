@@ -11,7 +11,9 @@ uses
   ObjAuto,
   Windows,
   SoapHTTPPasInv,
-//  WebSnapObjs,
+{$IF CompilerVersion < 26} // Older than Delphi XE5
+  WebSnapObjs,
+{$IFEND CompilerVersion < 26} // Older than Delphi XE5
   HVVMT in 'HVVMT.pas',
   IntfInfo,
   HVPublishedMethodParams in 'HVPublishedMethodParams.pas',
@@ -190,4 +192,9 @@ begin
   end;
   Readln;
 
+  { Not sure this is the Expected output:
+
+RTTI for the published method "Test1" of class "TMyClass" has 47 extra bytes of unknown data!
+
+  }
 end.

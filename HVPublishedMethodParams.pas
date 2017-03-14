@@ -9,44 +9,49 @@ uses
   HVVMT,
   HVMethodSignature;
 
-function SkipPackedShortString(Value: PShortString): Pointer;
+function SkipPackedShortString(const Value: PSymbolName): Pointer;
 
-function GetMethodSignature(Event: PPropInfo): TMethodSignature;
+function GetMethodSignature(const Event: PPropInfo): TMethodSignature;
 
-function FindEventProperty(Instance: TObject; Code: Pointer): PPropInfo;
+function FindEventProperty(const Instance: TObject; const Code: Pointer): PPropInfo;
 
-function FindEventFor(Instance: TObject; Code: Pointer): PPropInfo;
+function FindEventFor(const Instance: TObject; const Code: Pointer): PPropInfo;
 
-function FindPublishedMethodSignature(Instance: TObject; Code: Pointer; var MethodSignature: TMethodSignature): Boolean;
+function FindPublishedMethodSignature(const Instance: TObject; const Code: Pointer; var MethodSignature: TMethodSignature): Boolean;
 
-function PublishedMethodToString(Instance: TObject; Method: PPublishedMethod): string;
+function PublishedMethodToString(const Instance: TObject; const Method: PPublishedMethod): string;
 
-procedure GetPublishedMethodsWithParameters(Instance: TObject; List: TStrings);
+procedure GetPublishedMethodsWithParameters(const Instance: TObject; const List: TStrings);
 
 implementation
 
-function SkipPackedShortString(Value: PShortString): Pointer;
+{$IF CompilerVersion <= 20} // Delphi 2009 and older
+uses
+  IntfInfo;
+{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
+
+function SkipPackedShortString(const Value: PSymbolName): Pointer;
 begin
   Result := Value;
-  Inc(PAnsiChar(Result), SizeOf(Value^[0]) + Length(Value^));
+  Inc(PSymbolChar(Result), SizeOf(Value^[0]) + Length(Value^));
 end;
 
-function PackedShortString(Value: PShortString; var NextField { : Pointer } ): PShortString; overload;
+function PackedShortString(const Value: PSymbolName; var NextField { : Pointer }): PSymbolName; overload;
 begin
   Result := Value;
-  PShortString(NextField) := Value;
-  Inc(PAnsiChar(NextField), SizeOf(Result^[0]) + Length(Result^));
+  PSymbolName(NextField) := Value;
+  Inc(PSymbolChar(NextField), SizeOf(Result^[0]) + Length(Result^));
 end;
 
-function PackedShortString(var NextField { : Pointer } ): PShortString; overload;
+function PackedShortString(var NextField { : Pointer }): PSymbolName; overload;
 begin
-  Result := PShortString(NextField);
-  Inc(PAnsiChar(NextField), SizeOf(Result^[0]) + Length(Result^));
+  Result := PSymbolName(NextField);
+  Inc(PSymbolChar(NextField), SizeOf(Result^[0]) + Length(Result^));
 end;
 
-function GetMethodSignature(Event: PPropInfo): TMethodSignature;
-(* From TypInfo
-  TTypeData = packed record
+function GetMethodSignature(const Event: PPropInfo): TMethodSignature;
+(* TParamListRecord is based on this part of System.TypInfo:
+   TTypeData = packed record
     case TTypeKind of
      ...
      tkMethod: (
@@ -59,18 +64,26 @@ function GetMethodSignature(Event: PPropInfo): TMethodSignature;
             ParamName: ShortString;
             TypeName: ShortString;
           end;
-        ResultTypeName: ShortString);*)
+        ResultTypeName: ShortString;
+        ResultType: ShortString; // only if MethodKind = mkFunction
+        ResultTypeRef: PPTypeInfo; // only if MethodKind = mkFunction
+        CC: TCallConv; // >= D2010
+        ParamTypeRefs: array[1..ParamCount] of PPTypeInfo; // >= 2010
+        MethSig: PProcedureSignature; // >= 2010
+        MethAttrData: TAttrData}); // >= 2010
+*)
 type
   PParamListRecord = ^TParamListRecord;
 
   TParamListRecord = packed record
     Flags: TParamFlags;
-    ParamName: { packed } ShortString; // Really string[Length(ParamName)]
-    TypeName: { packed } ShortString; // Really string[Length(TypeName)]
+    ParamName: { packed } TSymbolName; // Really string[Length(ParamName)]
+    TypeName: { packed } TSymbolName; // Really string[Length(TypeName)]
   end;
 var
   EventData: PTypeData;
   i: Integer;
+  MethodKind: TMethodKind;
   MethodParam: PMethodParam;
   ParamListRecord: PParamListRecord;
 begin
@@ -79,9 +92,10 @@ begin
   EventData := GetTypeData(Event.PropType^);
   Finalize(Result);
   FillChar(Result, SizeOf(Result), 0);
-  Result.CallConv:= ccReg; // Educated guess
-  Result.HasSignatureRTTI := True;
-  Result.MethodKind := EventData.MethodKind;
+  Result.CallConv := ccReg; // Educated guess
+  Result.HasSignatureRTTI := True; { TODO -o##jpl -cVerify : check if this will give correct signatures }
+  MethodKind := EventData.MethodKind;
+  Result.MethodKind := MethodKind;
   Result.ParamCount := EventData.ParamCount;
   SetLength(Result.Parameters, Result.ParamCount);
   ParamListRecord := @EventData.ParamList;
@@ -89,13 +103,16 @@ begin
   begin
     MethodParam := @Result.Parameters[i];
     MethodParam.Flags := ParamListRecord.Flags;
-    MethodParam.ParamName := string(PackedShortString(@ParamListRecord.ParamName, ParamListRecord)^);
-    MethodParam.TypeName := string(PackedShortString(ParamListRecord)^);
+    MethodParam.ParamName := PackedShortString(@ParamListRecord.ParamName, ParamListRecord)^;
+    MethodParam.TypeName := PackedShortString(ParamListRecord)^;
   end;
-  Result.ResultTypeName := string(PackedShortString(ParamListRecord)^);
-end;  
+  if MethodKind = mkProcedure then
+    Result.ResultTypeName := ''
+  else
+    Result.ResultTypeName := PackedShortString(ParamListRecord)^;
+end;
 
-function FindEventProperty(Instance: TObject; Code: Pointer): PPropInfo;
+function FindEventProperty(const Instance: TObject; const Code: Pointer): PPropInfo;
 // Tries to find an event property that is assigned to a specific code address
 var
   Count: Integer;
@@ -123,7 +140,7 @@ begin
   Result := nil;
 end;
 
-function FindEventFor(Instance: TObject; Code: Pointer): PPropInfo;
+function FindEventFor(const Instance: TObject; const Code: Pointer): PPropInfo;
 // Tries to find an event property that is assigned to a specific code address
 // In this instance or in one if its owned components (if the instance is a component)
 var
@@ -144,10 +161,10 @@ begin
     end;
   end;
   Result := nil;
-  // TODO: Check published fields system
+  // TODO -oHallvard: Check published fields system
 end;
 
-function FindPublishedMethodSignature(Instance: TObject; Code: Pointer; var MethodSignature: TMethodSignature): Boolean;
+function FindPublishedMethodSignature(const Instance: TObject; const Code: Pointer; var MethodSignature: TMethodSignature): Boolean;
 var
   Event: PPropInfo;
 begin
@@ -158,21 +175,22 @@ begin
     MethodSignature := GetMethodSignature(Event);
 end;
 
-function PublishedMethodToString(Instance: TObject; Method: PPublishedMethod): string;
+function PublishedMethodToString(const Instance: TObject; const Method: PPublishedMethod): string;
 var
   MethodSignature: TMethodSignature;
 begin
   if FindPublishedMethodSignature(Instance, Method.Address, MethodSignature) then
-    Result := MethodSignatureToString(string(Method.Name), MethodSignature)
+    Result := MethodSignatureToString(Method.Name, MethodSignature)
   else
     Result := Format('procedure %s(???);', [Method.Name]);
 end;
 
-procedure GetPublishedMethodsWithParameters(Instance: TObject; List: TStrings);
+procedure GetPublishedMethodsWithParameters(const Instance: TObject; const List: TStrings);
 var
   i: Integer;
   Method: PPublishedMethod;
   AClass: TClass;
+  ClassName: string;
   Count: Integer;
 begin
   List.BeginUpdate;
@@ -181,10 +199,16 @@ begin
     AClass := Instance.ClassType;
     while Assigned(AClass) do
     begin
+      ClassName := AClass.ClassName;
+      List.Add(Format('Scanning %s', [ClassName]));
       Count := GetPublishedMethodCount(AClass);
-      if Count > 0 then
+      if Count = 0 then
       begin
-        List.Add(Format('Published methods in %s', [AClass.ClassName]));
+        List.Add(Format('No published methods in %s', [ClassName]));
+      end
+      else
+      begin
+        List.Add(Format('Published methods in %s', [ClassName]));
         Method := GetFirstPublishedMethod(AClass);
         for i := 0 to Count - 1 do
         begin

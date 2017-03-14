@@ -5,7 +5,9 @@ program TestPubFieldTable;
 uses
   Classes,
   SysUtils,
+{$IF CompilerVersion < 26} // Older than Delphi XE5
   WebSnapObjs,
+{$IFEND CompilerVersion < 26} // Older than Delphi XE5
   TypInfo, // system  webcomp
   HVVMT in 'HVVMT.pas';
 
@@ -121,4 +123,33 @@ begin
   Test;
   Readln;
 
+  { Expected output like (all nil values must be nil, all non nil values must be non-nil):
+
+type
+  TMyClass = class(TObject)
+  published
+    A: TObject; // Offs=4, Index=0
+    LongName: TComponent; // Offs=8, Index=1
+    B: TObject; // Offs=12, Index=0
+    C: TList; // Offs=16, Index=2
+    A2: TObject; // Offs=20, Index=0
+    L2ongName: TComponent; // Offs=24, Index=1
+    B2: TObject; // Offs=28, Index=0
+    C2: TList; // Offs=32, Index=2
+  end;
+
+type
+  TMyClass = class(TObject)
+  published
+    A: TObject; // Offs=4, Index=0, Value=00850DB0
+    LongName: TComponent; // Offs=8, Index=1, Value=008667B0
+    B: TObject; // Offs=12, Index=0, Value=0086DA20
+    C: TList; // Offs=16, Index=2, Value=00849D40
+    A2: TObject; // Offs=20, Index=0, Value=00000000
+    L2ongName: TComponent; // Offs=24, Index=1, Value=00000000
+    B2: TObject; // Offs=28, Index=0, Value=00000000
+    C2: TList; // Offs=32, Index=2, Value=00000000
+  end;
+
+  }
 end.

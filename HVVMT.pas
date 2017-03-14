@@ -4,25 +4,43 @@ unit HVVMT;
 
 interface
 
+uses
+  TypInfo;
+
 type
   // For testing / typecasting at debug time
   PAnsiChars = ^TAnsiChars;
   TAnsiChars = array [0..4095] of AnsiChar;
 
 type
+{$IFDEF UNICODE}
+  TSymbolChar = AnsiChar;
+  PSymbolChar = PAnsiChar;
+{$ELSE}
+  TSymbolChar = Char;
+  PSymbolChar = PChar;
+{$ENDIF UNICODE}
+{$IF CompilerVersion <= 23}  // Delphi XE3 or older
+  TSymbolNameBase = string[255];
+  TSymbolName = type TSymbolNameBase;
+{$ELSE}
+  TSymbolNameBase = TypInfo.TSymbolNameBase;
+  TSymbolName = TypInfo.TSymbolNameBase;
+{$IFEND CompilerVersion <= 23}
+  PSymbolName = ^TSymbolName;
   PObject = ^TObject;
   PClass = ^TClass;
 
   // TObject virtual methods' signatures
 {$IFDEF AUTOREFCOUNT} // In XE6, but only mobile platforms? (before?)
-  P__ObjAddRef       = function (Self: TObject): Integer;
-  P__ObjRelease      = function (Self: TObject): Integer;
+  P__ObjAddRef = function (Self: TObject): Integer;
+  P__ObjRelease = function (Self: TObject): Integer;
 {$ENDIF}
-{$IF CompilerVersion >= 20} // Delphi 2009 ->
-  PEquals            = function (Self: TObject; Obj: TObject): Boolean;
-  PGetHashCode       = function (Self: TObject): Integer;
-  PToString          = function (Self: TObject): string;
-{$IFEND}
+{$IF CompilerVersion >= 20} // Delphi 2009 or newer
+  PEquals = function (Self: TObject; Obj: TObject): Boolean;
+  PGetHashCode = function (Self: TObject): Integer;
+  PToString = function (Self: TObject): string;
+{$IFEND CompilerVersion >= 20}
   PSafeCallException = function(Self: TObject; ExceptObject: TObject; ExceptAddr: Pointer): HResult;
   PAfterConstruction = procedure(Self: TObject);
   PBeforeDestruction = procedure(Self: TObject);
@@ -52,7 +70,7 @@ type
   TPublishedMethod = packed record
     Size: Word;
     Address: Pointer;
-    Name: { packed } ShortString;
+    Name: { packed } TSymbolName; // same type as System.TypInfo.TVmtMethodEntry.Name: TSymbolName;
   end;
 
   TPublishedMethods = packed array [0 .. High(Word) - 1] of TPublishedMethod;
@@ -69,7 +87,7 @@ type
   TPublishedField = packed record
     Offset: Integer;
     TypeIndex: Word; // Index into the FieldTypes array below
-    Name: { packed } ShortString; // really string[Length(Name)]
+    Name: { packed } TSymbolName; // really string[Length(Name)]; same type as System.TypInfo.TVmtFieldEntry.Name: TSymbolName
   end;
 
   PPublishedFieldTypes = ^TPublishedFieldTypes;
@@ -100,18 +118,18 @@ type
     FieldTable: PPft;
     MethodTable: PPmt;
     DynamicTable: PDmt;
-    ClassName: PShortString;
+    ClassName: PSymbolName;
     InstanceSize: PLongint;
     Parent: PClass;
 {$IFDEF AUTOREFCOUNT}
-    __ObjAddRef       : P__ObjAddRef;
-    __ObjRelease      : P__ObjRelease;
+    __ObjAddRef: P__ObjAddRef;
+    __ObjRelease: P__ObjRelease;
 {$ENDIF}
-{$IF CompilerVersion >= 20}
-    Equals            : PEquals;
-    GetHashCode       : PGetHashCode;
-    ToString          : PToString;
-{$IFEND}
+{$IF CompilerVersion >= 20} // Delphi 2009 or newer
+    Equals: PEquals;
+    GetHashCode: PGetHashCode;
+    ToString: PToString;
+{$IFEND CompilerVersion >= 20}
     SafeCallException: PSafeCallException;
     AfterConstruction: PAfterConstruction;
     BeforeDestruction: PBeforeDestruction;
@@ -123,59 +141,59 @@ type
     { UserDefinedVirtuals: array[0..999] of procedure; }
   end;
 
-  // Virtual method table
-function GetVmt(AClass: TClass): PVmt;
+// Virtual method table
+function GetVmt(const AClass: TClass): PVmt;
 
 // Published methods
-function GetPmt(AClass: TClass): PPmt;
-function GetPublishedMethodCount(AClass: TClass): Integer;
-function GetPublishedMethod(AClass: TClass; Index: Integer): PPublishedMethod;
-function GetFirstPublishedMethod(AClass: TClass): PPublishedMethod;
-function GetNextPublishedMethod(AClass: TClass; PublishedMethod: PPublishedMethod): PPublishedMethod;
-function FindPublishedMethodByName(AClass: TClass; const AName: ShortString): PPublishedMethod;
-function FindPublishedMethodByAddr(AClass: TClass; AAddr: Pointer): PPublishedMethod;
-function FindPublishedMethodAddr(AClass: TClass; const AName: ShortString): Pointer;
-function FindPublishedMethodName(AClass: TClass; AAddr: Pointer): ShortString;
+function GetPmt(const AClass: TClass): PPmt;
+function GetPublishedMethodCount(const AClass: TClass): Integer;
+function GetPublishedMethod(const AClass: TClass; const Index: Integer): PPublishedMethod;
+function GetFirstPublishedMethod(const AClass: TClass): PPublishedMethod;
+function GetNextPublishedMethod(const AClass: TClass; const PublishedMethod: PPublishedMethod): PPublishedMethod;
+function FindPublishedMethodByName(const AClass: TClass; const AName: TSymbolName): PPublishedMethod;
+function FindPublishedMethodByAddr(const AClass: TClass; const AAddr: Pointer): PPublishedMethod;
+function FindPublishedMethodAddr(const AClass: TClass; const AName: TSymbolName): Pointer;
+function FindPublishedMethodName(const AClass: TClass; const AAddr: Pointer): TSymbolName;
 
 // Published fields
-function GetPft(AClass: TClass): PPft;
-function GetPublishedFieldCount(AClass: TClass): Integer;
-function GetNextPublishedField(AClass: TClass; PublishedField: PPublishedField): PPublishedField;
-function GetPublishedField(AClass: TClass; TypeIndex: Integer): PPublishedField;
-function GetFirstPublishedField(AClass: TClass): PPublishedField;
-function FindPublishedFieldByName(AClass: TClass; const AName: ShortString): PPublishedField;
-function FindPublishedFieldByOffset(AClass: TClass; AOffset: Integer): PPublishedField;
-function FindPublishedFieldByAddr(Instance: TObject; AAddr: Pointer): PPublishedField;
-function FindPublishedFieldOffset(AClass: TClass; const AName: ShortString): Integer;
-function FindPublishedFieldAddr(Instance: TObject; const AName: ShortString): PObject;
-function FindPublishedFieldName(AClass: TClass; AOffset: Integer): ShortString; overload;
-function FindPublishedFieldName(Instance: TObject; AAddr: Pointer): ShortString; overload;
-function GetPublishedFieldType(AClass: TClass; Field: PPublishedField): TClass;
-function GetPublishedFieldAddr(Instance: TObject; Field: PPublishedField): PObject;
-function GetPublishedFieldValue(Instance: TObject; Field: PPublishedField): TObject;
+function GetPft(const AClass: TClass): PPft;
+function GetPublishedFieldCount(const AClass: TClass): Integer;
+function GetNextPublishedField(const AClass: TClass; const PublishedField: PPublishedField): PPublishedField;
+function GetPublishedField(const AClass: TClass; const TypeIndex: Integer): PPublishedField;
+function GetFirstPublishedField(const AClass: TClass): PPublishedField;
+function FindPublishedFieldByName(const AClass: TClass; const AName: TSymbolName): PPublishedField;
+function FindPublishedFieldByOffset(const AClass: TClass; const AOffset: Integer): PPublishedField;
+function FindPublishedFieldByAddr(const Instance: TObject; const AAddr: Pointer): PPublishedField;
+function FindPublishedFieldOffset(const AClass: TClass; const AName: TSymbolName): Integer;
+function FindPublishedFieldAddr(const Instance: TObject; const AName: TSymbolName): PObject;
+function FindPublishedFieldName(const AClass: TClass; const AOffset: Integer): TSymbolName; overload;
+function FindPublishedFieldName(const Instance: TObject; const AAddr: Pointer): TSymbolName; overload;
+function GetPublishedFieldType(const AClass: TClass; const Field: PPublishedField): TClass;
+function GetPublishedFieldAddr(const Instance: TObject; const Field: PPublishedField): PObject;
+function GetPublishedFieldValue(const Instance: TObject; const Field: PPublishedField): TObject;
 
 implementation
 
 uses
+{$IF CompilerVersion >= 25} // Delphi XE4 or newer
+  AnsiStrings, 
+{$IFEND CompilerVersion >= 25}
   Classes,
-  SysUtils,
-  TypInfo;
+  SysUtils;
 
 // Virtual method table
 
-function GetVmt(AClass: TClass): PVmt;
+function GetVmt(const AClass: TClass): PVmt;
 begin
   Result := PVmt(AClass);
   Dec(Result);
-{$IFDEF DEBUG}
   if Result.SelfPtr <> AClass then
     raise Exception.CreateFmt('Vmt of %s is not as expected', [AClass.Classname]);
-{$ENDIF}
 end;
 
 // Published methods
 
-function GetPmt(AClass: TClass): PPmt;
+function GetPmt(const AClass: TClass): PPmt;
 var
   Vmt: PVmt;
 begin
@@ -186,7 +204,7 @@ begin
     Result := nil;
 end;
 
-function GetPublishedMethodCount(AClass: TClass): Integer;
+function GetPublishedMethodCount(const AClass: TClass): Integer;
 var
   Pmt: PPmt;
 begin
@@ -197,32 +215,34 @@ begin
     Result := 0;
 end;
 
-function GetPublishedMethod(AClass: TClass; Index: Integer): PPublishedMethod;
+function GetPublishedMethod(const AClass: TClass; const Index: Integer): PPublishedMethod;
 var
+  CurrentIndex: Integer;
   Pmt: PPmt;
 begin
   Pmt := GetPmt(AClass);
-  if Assigned(Pmt) and (Index < Pmt.Count) then
+  CurrentIndex := Index;
+  if Assigned(Pmt) and (CurrentIndex < Pmt.Count) then
   begin
     Result := @Pmt.Methods[0];
-    while Index > 0 do
+    while CurrentIndex > 0 do
     begin
-      Inc(PAnsiChar(Result), Result.Size);
-      Dec(Index);
+      Result := GetNextPublishedMethod(AClass, Result);
+      Dec(CurrentIndex);
     end;
   end
   else
     Result := nil;
 end;
 
-function GetFirstPublishedMethod(AClass: TClass): PPublishedMethod;
+function GetFirstPublishedMethod(const AClass: TClass): PPublishedMethod;
 begin
   Result := GetPublishedMethod(AClass, 0);
 end;
 
 { .$DEFINE DEBUG }
-{$UNDEF DEBUG }
-function GetNextPublishedMethod(AClass: TClass; PublishedMethod: PPublishedMethod): PPublishedMethod;
+{ .$UNDEF DEBUG }
+function GetNextPublishedMethod(const AClass: TClass; const PublishedMethod: PPublishedMethod): PPublishedMethod;
 // Note: Caller is responsible for calling this the
 // correct number of times (using GetPublishedMethodCount)
 {$IFDEF DEBUG}
@@ -232,58 +252,63 @@ var
 begin
   Result := PublishedMethod;
 {$IFDEF DEBUG}
-  ExpectedSize :=   SizeOf(Result.Size)
-                  + SizeOf(Result.Address)
-                  + SizeOf(Result.Name[0])
+  ExpectedSize := SizeOf(Result.Size) //
+    + SizeOf(Result.Address) //
+    + SizeOf(Result.Name[0]) //
     + Length(Result.Name);
   if Result.Size <> ExpectedSize then
     raise Exception.CreateFmt( //
-'RTTI for the published method "%s" of class "%s" has %d extra bytes of unknown data!',
+      'RTTI for the published method "%s" of class "%s" has %d extra bytes of unknown data!', //
       [Result.Name, AClass.ClassName, Result.Size - ExpectedSize]);
 {$ENDIF}
   if Assigned(Result) then
-    Inc(PAnsiChar(Result), Result.Size);
+    Inc(PByte(Result), Result.Size);
 end;
 
-function FindPublishedMethodByName(AClass: TClass; const AName: ShortString): PPublishedMethod;
+function FindPublishedMethodByName(const AClass: TClass; const AName: TSymbolName): PPublishedMethod;
 var
+  CurrentClass: TClass;
   i: Integer;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Result := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
+    Result := GetFirstPublishedMethod(CurrentClass);
+    for i := 0 to GetPublishedMethodCount(CurrentClass) - 1 do
     begin
       // Note: Length(ShortString) expands to efficient inline code
       if (Length(Result.Name) = Length(AName)) and //
-         (StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) then 
+         ({$IF CompilerVersion >= 25}AnsiStrings.{$IFEND CompilerVersion >= 25}StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) //
+      then
         Exit;
-      Result := GetNextPublishedMethod(AClass, Result);
+      Result := GetNextPublishedMethod(CurrentClass, Result);
     end;
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
   Result := nil;
 end;
 
-function FindPublishedMethodByAddr(AClass: TClass; AAddr: Pointer): PPublishedMethod;
+function FindPublishedMethodByAddr(const AClass: TClass; const AAddr: Pointer): PPublishedMethod;
 var
+  CurrentClass: TClass;
   i: Integer;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Result := GetFirstPublishedMethod(AClass);
-    for i := 0 to GetPublishedMethodCount(AClass) - 1 do
+    Result := GetFirstPublishedMethod(CurrentClass);
+    for i := 0 to GetPublishedMethodCount(CurrentClass) - 1 do
     begin
       if Result.Address = AAddr then
         Exit;
-      Result := GetNextPublishedMethod(AClass, Result);
+      Result := GetNextPublishedMethod(CurrentClass, Result);
     end;
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
   Result := nil;
 end;
 
-function FindPublishedMethodAddr(AClass: TClass; const AName: ShortString): Pointer;
+function FindPublishedMethodAddr(const AClass: TClass; const AName: TSymbolName): Pointer;
 var
   Method: PPublishedMethod;
 begin
@@ -294,7 +319,7 @@ begin
     Result := nil;
 end;
 
-function FindPublishedMethodName(AClass: TClass; AAddr: Pointer): ShortString;
+function FindPublishedMethodName(const AClass: TClass; const AAddr: Pointer): TSymbolName;
 var
   Method: PPublishedMethod;
 begin
@@ -307,7 +332,7 @@ end;
 
 // Published fields
 
-function GetPft(AClass: TClass): PPft;
+function GetPft(const AClass: TClass): PPft;
 var
   Vmt: PVmt;
 begin
@@ -318,7 +343,7 @@ begin
     Result := nil;
 end;
 
-function GetPublishedFieldCount(AClass: TClass): Integer;
+function GetPublishedFieldCount(const AClass: TClass): Integer;
 var
   Pft: PPft;
 begin
@@ -329,85 +354,95 @@ begin
     Result := 0;
 end;
 
-function GetNextPublishedField(AClass: TClass; PublishedField: PPublishedField): PPublishedField;
+function GetNextPublishedField(const AClass: TClass; const PublishedField: PPublishedField): PPublishedField;
 // Note: Caller is responsible for calling this the
 // correct number of times (using GetPublishedFieldCount)
 begin
   Result := PublishedField;
   if Assigned(Result) then
-    Inc(PAnsiChar(Result), SizeOf(Result.Offset) //
+    Inc(PByte(Result), SizeOf(Result.Offset) //
       + SizeOf(Result.TypeIndex) //
-      + SizeOf(Result.Name[0]) + //
-      Length(Result.Name));
+      + SizeOf(Result.Name[0]) //
+      + Length(Result.Name));
 end;
 
-function GetPublishedField(AClass: TClass; TypeIndex: Integer): PPublishedField;
+function GetPublishedField(const AClass: TClass; const TypeIndex: Integer): PPublishedField;
 var
+  CurrentTypeIndex: Integer;
   Pft: PPft;
 begin
   Pft := GetPft(AClass);
-  if Assigned(Pft) and (TypeIndex < Pft.Count) then
+  CurrentTypeIndex := TypeIndex;
+  if Assigned(Pft) and (CurrentTypeIndex < Pft.Count) then
   begin
     Result := @Pft.Fields[0];
-    while TypeIndex > 0 do
+    while CurrentTypeIndex > 0 do
     begin
       Result := GetNextPublishedField(AClass, Result);
-      Dec(TypeIndex);
+      Dec(CurrentTypeIndex);
     end;
   end
   else
     Result := nil;
 end;
 
-function GetFirstPublishedField(AClass: TClass): PPublishedField;
+function GetFirstPublishedField(const AClass: TClass): PPublishedField;
 begin
   Result := GetPublishedField(AClass, 0);
 end;
 
-function FindPublishedFieldByName(AClass: TClass; const AName: ShortString): PPublishedField;
+function FindPublishedFieldByName(const AClass: TClass; const AName: TSymbolName): PPublishedField;
 var
+  CurrentClass: TClass;
   i: Integer;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Result := GetFirstPublishedField(AClass);
-    for i := 0 to GetPublishedFieldCount(AClass) - 1 do
+    Result := GetFirstPublishedField(CurrentClass);
+    for i := 0 to GetPublishedFieldCount(CurrentClass) - 1 do
     begin
       // Note: Length(ShortString) expands to efficient inline code
       if (Length(Result.Name) = Length(AName)) and //
-         (StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) then
+         ({$IF CompilerVersion >= 25}AnsiStrings.{$IFEND CompilerVersion >= 25}StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) //
+      then
         Exit;
-      Result := GetNextPublishedField(AClass, Result);
+      Result := GetNextPublishedField(CurrentClass, Result);
     end;
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
   Result := nil;
 end;
 
-function FindPublishedFieldByOffset(AClass: TClass; AOffset: Integer): PPublishedField;
+function FindPublishedFieldByOffset(const AClass: TClass; const AOffset: Integer): PPublishedField;
 var
+  CurrentClass: TClass;
   i: Integer;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Result := GetFirstPublishedField(AClass);
-    for i := 0 to GetPublishedFieldCount(AClass) - 1 do
+    Result := GetFirstPublishedField(CurrentClass);
+    for i := 0 to GetPublishedFieldCount(CurrentClass) - 1 do
     begin
       if Result.Offset = AOffset then
         Exit;
-      Result := GetNextPublishedField(AClass, Result);
+      Result := GetNextPublishedField(CurrentClass, Result);
     end;
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
   Result := nil;
 end;
 
-function FindPublishedFieldByAddr(Instance: TObject; AAddr: Pointer): PPublishedField;
+function FindPublishedFieldByAddr(const Instance: TObject; const AAddr: Pointer): PPublishedField;
 begin
-  Result := FindPublishedFieldByOffset(Instance.ClassType, PAnsiChar(AAddr) - PAnsiChar(Instance));
+  asm
+    int 3
+  end;
+  Result := FindPublishedFieldByOffset(Instance.ClassType, PSymbolChar(AAddr) - PSymbolChar(Instance)); { TODO -o##jpl -cFix : Why note PByte ?? }
 end;
 
-function FindPublishedFieldOffset(AClass: TClass; const AName: ShortString): Integer;
+function FindPublishedFieldOffset(const AClass: TClass; const AName: TSymbolName): Integer;
 var
   Field: PPublishedField;
 begin
@@ -418,18 +453,21 @@ begin
     Result := -1;
 end;
 
-function FindPublishedFieldAddr(Instance: TObject; const AName: ShortString): PObject;
+function FindPublishedFieldAddr(const Instance: TObject; const AName: TSymbolName): PObject;
 var
   Offset: Integer;
 begin
   Offset := FindPublishedFieldOffset(Instance.ClassType, AName);
+  asm
+    int 3
+  end;
   if Offset >= 0 then
-    Result := PObject(PAnsiChar(Instance) + Offset)
+    Result := PObject(PSymbolChar(Instance) + Offset) { TODO -o##jpl -cFix : Why note PByte ?? }
   else
     Result := nil;
 end;
 
-function FindPublishedFieldName(AClass: TClass; AOffset: Integer): ShortString; overload;
+function FindPublishedFieldName(const AClass: TClass; const AOffset: Integer): TSymbolName;
 var
   Field: PPublishedField;
 begin
@@ -440,7 +478,7 @@ begin
     Result := '';
 end;
 
-function FindPublishedFieldName(Instance: TObject; AAddr: Pointer): ShortString; overload;
+function FindPublishedFieldName(const Instance: TObject; const AAddr: Pointer): TSymbolName;
 var
   Field: PPublishedField;
 begin
@@ -451,7 +489,7 @@ begin
     Result := '';
 end;
 
-function GetPublishedFieldType(AClass: TClass; Field: PPublishedField): TClass;
+function GetPublishedFieldType(const AClass: TClass; const Field: PPublishedField): TClass;
 var
   Pft: PPft;
 begin
@@ -462,15 +500,15 @@ begin
     Result := nil;
 end;
 
-function GetPublishedFieldAddr(Instance: TObject; Field: PPublishedField): PObject;
+function GetPublishedFieldAddr(const Instance: TObject; const Field: PPublishedField): PObject;
 begin
   if Assigned(Field) then
-    Result := PObject(PAnsiChar(Instance) + Field.Offset)
+    Result := PObject(PSymbolChar(Instance) + Field.Offset) { TODO -o##jpl -cFix : Why note PByte ?? }
   else
     Result := nil;
 end;
 
-function GetPublishedFieldValue(Instance: TObject; Field: PPublishedField): TObject;
+function GetPublishedFieldValue(const Instance: TObject; const Field: PPublishedField): TObject;
 var
   FieldAddr: PObject;
 begin
@@ -480,5 +518,18 @@ begin
   else
     Result := nil;
 end;
+
+const
+  TSymbolChar_Size = SizeOf(TSymbolChar);
+{$IF Declared(TVmtFieldEntry)}
+  TVmtFieldEntry_Size = SizeOf(TVmtFieldEntry);
+  TPublishedField_Size = SizeOf(TPublishedField);
+{$IFEND Declared(TVmtFieldEntry)}
+initialization
+  Assert(TSymbolChar_Size = 1);
+{$IF Declared(TVmtFieldEntry)}
+  Assert(TPublishedField_Size = TVmtFieldEntry_Size);
+{$IFEND Declared(TVmtFieldEntry)}
+finalization
 
 end.

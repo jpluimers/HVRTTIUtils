@@ -12,59 +12,52 @@ type
   PClassInfo = ^TClassInfo;
 
   TClassInfo = record
-    UnitName: string; 
-    Name: string;
+    UnitName: TSymbolName; // same type as System.TypInfo.TTypeData.UnitName: TSymbolName
+    Name: string; // same type as TObject.ClassName: string, so no need for TSymbolName
     ClassType: TClass;
     ParentClass: TClass;
     MethodCount: Word;
-    Methods: array of TMethodSignature;
+    Methods: TMethodSignatureList;
   end;
 
-procedure GetClassInfo(ClassTypeInfo: PTypeInfo; var ClassInfo: TClassInfo);
+procedure GetClassInfo(const ClassTypeInfo: PTypeInfo; var ClassInfo: TClassInfo);
 
 implementation
 
 uses
+{$IF CompilerVersion <= 20} // Delphi 2009 and older
+  IntfInfo,
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
   ObjAuto;
 
-//type
-  // compiler implementation-specific structures, subject to change in future Delphi versions
-  // Derived from declarations in ObjAuto.pas
-//  PReturnInfo = ^TReturnInfo;
-//
-//  TReturnInfo = packed record
-//    Version: Byte;
-//    CallingConvention: TCallConv;
-//    ReturnType: PPTypeInfo;
-//    ParamSize: Word;
-//  end;
+const
+{$IF CompilerVersion >= 22} // Delphi XE or newer
+  MandatoryTReturnInfoVersion = 3;
+{$ELSE}
+{$IF CompilerVersion = 21} // Delphi 2010
+  MandatoryTReturnInfoVersion = 2;
+{$ELSE} // Delphi 2009 or older
+  MandatoryTReturnInfoVersion = 1;
+{$IFEND CompilerVersion >= 21}
+{$IFEND CompilerVersion >= 22}
 
-//  PParamInfo = ^TParamInfo;
-//
-//  TParamInfo = packed record
-//    Flags: TParamFlags;
-//    ParamType: PPTypeInfo;
-//    Access: Word;
-//    Name: ShortString;
-//  end;
-
-function ClassOfTypeInfo(P: PPTypeInfo): TClass;
+function ClassOfTypeInfo(const P: PPTypeInfo): TClass;
 begin
   Result := nil;
   if Assigned(P) and (P^.Kind = tkClass) then
     Result := GetTypeData(P^).ClassType;
 end;
 
-function NextParameter(Param: PParamInfo): PParamInfo;
+function NextParameter(const Param: PParamInfo): PParamInfo;
 begin
   Result := Skip(@Param.Name);
-{$IF CompilerVersion >= 21} // Attrbutes word added in 2010
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer have `attributes`
   // Skip attribute data
   Inc(PByte(Result), PWord(Result)^);
-{$ENDIF}
+{$IFEND CompilerVersion >= 21}
 end;
 
-procedure GetClassInfo(ClassTypeInfo: PTypeInfo; var ClassInfo: TClassInfo);
+procedure GetClassInfo(const ClassTypeInfo: PTypeInfo; var ClassInfo: TClassInfo);
 // Converts from raw RTTI structures to user-friendly Info structures
 var
   TypeData: PTypeData;
@@ -82,7 +75,7 @@ begin
   TypeData := GetTypeData(ClassTypeInfo);
   Finalize(ClassInfo);
   FillChar(ClassInfo, SizeOf(ClassInfo), 0);
-  ClassInfo.UnitName := string(TypeData.UnitName);
+  ClassInfo.UnitName := TypeData.UnitName;
   ClassInfo.ClassType := TypeData.ClassType;
   ClassInfo.Name := TypeData.ClassType.ClassName;
   ClassInfo.ParentClass := ClassOfTypeInfo(TypeData.ParentInfo);
@@ -95,13 +88,13 @@ begin
   begin
     // Method
     MethodInfo := @ClassInfo.Methods[i];
-    MethodInfo.Name := string(PublishedMethod.Name);
+    MethodInfo.Name := PublishedMethod.Name;
     MethodInfo.Address := PublishedMethod.Address;
     MethodInfo.MethodKind := mkProcedure; // Assume procedure by default
 
     // Return info and calling convention
     ReturnRTTI := Skip(@PublishedMethod.Name);
-
+    Assert(ReturnRTTI.Version = MandatoryTReturnInfoVersion);
     SignatureEnd := Pointer(Cardinal(PublishedMethod) //
       + PublishedMethod.Size);
     if Cardinal(ReturnRTTI) >= Cardinal(SignatureEnd) then
@@ -115,15 +108,19 @@ begin
       if Assigned(MethodInfo.ResultTypeInfo) then
       begin
         MethodInfo.MethodKind := mkFunction;
-        MethodInfo.ResultTypeName := string(MethodInfo.ResultTypeInfo.Name);
+        MethodInfo.ResultTypeName := MethodInfo.ResultTypeInfo.Name;
       end
       else
         MethodInfo.MethodKind := mkProcedure;
+{$IF CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
+      MethodInfo.CallConv := TCallConv(ReturnRTTI.CallingConvention);
+{$ELSE}
       MethodInfo.CallConv := ReturnRTTI.CallingConvention;
+{$IFEND CompilerVersion <= 22}
       MethodInfo.HasSignatureRTTI := True;
       // Count parameters
-  // NOTE for 2010 and later we need to use ReturnRTTI.ParamCount
-{$IF Declared(ReturnRTTI.ParamCount)}
+
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer have ReturnRTTI.ParamCount; use it:
       MethodInfo.ParamCount := ReturnRTTI.ParamCount;
 {$ELSE}
       ParameterRTTI := Pointer(Cardinal(ReturnRTTI) + SizeOf(ReturnRTTI^));
@@ -133,21 +130,25 @@ begin
         Inc(MethodInfo.ParamCount); // Assume less than 255 parameters ;)!
         ParameterRTTI := NextParameter(ParameterRTTI);
       end;
-{$IFEND}
+{$IFEND CompilerVersion >= 21}
       // Read parameter info
       ParameterRTTI := Pointer(Cardinal(ReturnRTTI) + SizeOf(ReturnRTTI^));
       SetLength(MethodInfo.Parameters, MethodInfo.ParamCount);
       for j := Low(MethodInfo.Parameters) to High(MethodInfo.Parameters) do
       begin
         MethodParam := @MethodInfo.Parameters[j];
+{$IF CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
+        MethodParam.Flags := TypInfo.TParamFlags(ParameterRTTI.Flags);
+{$ELSE}
         MethodParam.Flags := ParameterRTTI.Flags;
-        if pfResult in MethodParam.Flags then
+{$IFEND CompilerVersion <= 22}
+        if pfResult in ParameterRTTI.Flags then
           MethodParam.ParamName := 'Result'
         else
-          MethodParam.ParamName := string(ParameterRTTI.Name);
+          MethodParam.ParamName := ParameterRTTI.Name;
         MethodParam.TypeInfo := Dereference(PPTypeInfo(ParameterRTTI.ParamType));
         if Assigned(MethodParam.TypeInfo) then
-          MethodParam.TypeName := string(MethodParam.TypeInfo.Name);
+          MethodParam.TypeName := MethodParam.TypeInfo.Name;
         MethodParam.Location := TParamLocation(ParameterRTTI.Access);
         ParameterRTTI := NextParameter(ParameterRTTI);
       end;
@@ -156,5 +157,24 @@ begin
       PublishedMethod);
   end;
 end;
+
+{$WARN SYMBOL_DEPRECATED OFF}
+{$IF Declared(TCallingConvention)}
+
+const
+  LowTCallingConvention = Ord(Low(TCallingConvention));
+  LowTCallConv = Ord(Low(TCallConv));
+  HighTCallingConvention = Ord(High(TCallingConvention));
+  HighTCallConv = Ord(High(TCallConv));
+// Todo -o##jpl : Find a way to verify that both the TParamFlags types are the same for Delphi versions where they do not indirect:
+// ObjAuto:   TParamFlags = set of (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
+// TypInfo:   TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut);
+// TypInfo:   TParamFlags = set of TParamFlag;
+initialization
+  Assert(LowTCallingConvention = LowTCallConv);
+  Assert(HighTCallingConvention = HighTCallConv);
+finalization
+
+{$IFEND Declared(TCallingConvention)}
 
 end.

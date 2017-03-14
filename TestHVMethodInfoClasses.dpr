@@ -163,4 +163,8 @@ begin
   end;
   Readln;
 
+  { Not sure if this is the Expected output:
+
+RTTI for the published method "Test1" of class "TMyClass" has 47 extra bytes of unknown data!
+  }
 end.

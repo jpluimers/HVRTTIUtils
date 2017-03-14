@@ -108,4 +108,31 @@ begin
   Test;
   Readln;
 
+  { Expected output like (all nil values must be nil, all non nil values must be non-nil):
+
+Published methods in TMyClass
+0. MethodAddr = 004CE818, Name = FirstPublished
+1. MethodAddr = 004CE81C, Name = SecondPublished
+2. MethodAddr = 004CE820, Name = ThirdPublished
+3. MethodAddr = 004CE828, Name = FourthPublished
+4. MethodAddr = 004CE834, Name = FifthPublished
+5. MethodAddr = 004CE83C, Name = SixthPublished
+Published methods in TObject
+Published methods in TMyClass
+0. MethodAddr = 004CE818, Name = FirstPublished
+1. MethodAddr = 004CE81C, Name = SecondPublished
+2. MethodAddr = 004CE820, Name = ThirdPublished
+3. MethodAddr = 004CE828, Name = FourthPublished
+4. MethodAddr = 004CE834, Name = FifthPublished
+5. MethodAddr = 004CE83C, Name = SixthPublished
+Published methods in TObject
+004CE818=FirstPublished
+004CE81C=SecondPublished
+004CE820=ThirdPublished
+004CE828=FourthPublished
+004CE834=FifthPublished
+004CE83C=SixthPublished
+nil
+nil
+  }
 end.

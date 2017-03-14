@@ -1,4 +1,5 @@
 program TestMPlus;
+
 {$APPTYPE CONSOLE}
 
 uses
@@ -62,4 +63,22 @@ begin
   DumpMClass(TMPlus);
   Readln;
 
+  { Expected output like (all nil values must be nil, all non nil values must be non-nil):
+
+Testing TMMinus:
+DefField=00000000
+DefProp=00000000
+DefMethod=00000000
+PubField=01E09D60
+PubProp=004CE06F
+PubMethod=004CE284
+
+Testing TMPlus:
+DefField=01E09D74
+DefProp=004CE226
+DefMethod=004CE288
+PubField=01E09D90
+PubProp=004CE248
+PubMethod=004CE28C
+  }
 end.

@@ -154,4 +154,66 @@ begin
   end;
   Readln;
 
+  (* Expected output:
+
+unit TestExtendedInterfaceRTTI;
+type
+  IMyInterface = interface (IInterface)
+    procedure UnknownName1;
+    procedure UnknownName2;
+    procedure UnknownName3;
+  end;
+
+unit TestExtendedInterfaceRTTI;
+type
+  IMyGUIDInterface = interface (IInterface)
+    ['{8B07020B-F326-45BC-A686-9322890B1051}']
+    procedure UnknownName1;
+    procedure UnknownName2;
+    procedure UnknownName3;
+  end;
+
+unit TestExtendedInterfaceRTTI;
+type
+  IMyDispInterface = dispinterface
+    ['{8574E276-4671-49AC-B775-B299E6EF01C5}']
+    procedure UnknownName1;
+  end;
+
+unit TestExtendedInterfaceRTTI;
+type
+  IMyDispatchInterface = interface (IDispatch)
+    ['{9BC5459B-6C31-4F5B-B733-DCA8FC8C1345}']
+    procedure UnknownName1;
+  end;
+
+unit TestExtendedInterfaceRTTI;
+type
+  IMyMPInterface = interface (IInterface)
+    ['{AA503475-0187-4108-8E27-41475F4EF818}']
+    procedure Foo(A: Integer; var B: string);
+    procedure Bar(LongParaName: TObject; const B: string; var C: Integer; out D: Byte); stdcall;
+    function Number(): Integer; cdecl;
+    function NewNumber(): TNewNumber; cdecl;
+    function AsString(): string; pascal;
+    function AsString2(): string; safecall;
+    procedure A2(const A: TIntegerArray);
+    procedure OkParam1(Value: TSetOfByte);
+    procedure OkParam2(Value: TSetOfByte);
+    procedure OkParam3(Value: Variant);
+    procedure OkParam4(Value: TNormalClass);
+    function OkReturn1(): ShortString;
+    function OkReturn2(): TObject;
+    function OkReturn3(): IInterface;
+    function OkReturn4(): TSetOfByte;
+    function OkReturn5(): TNormalClass;
+    function OkReturn6(): TEnum;
+    function OkReturn7(): TClass;
+    function OkReturn8(): Pointer;
+    function OkReturn9(): PAnsiChar;
+    function OkReturn10(): TIntegerArray;
+    procedure Test3(out R: Integer); safecall;
+  end;
+
+ *)
 end.

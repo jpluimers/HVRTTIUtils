@@ -2,7 +2,7 @@ program TestPolyPub;
 
 {$APPTYPE CONSOLE}
 
-uses 
+uses
   Classes,
   SysUtils,
   TypInfo,
@@ -75,4 +75,13 @@ begin
   CallList(BuildList);
   Readln;
 
+  { Expected output:
+
+TParent.Polymorphic: 0
+TParent.Polymorphic: 0
+TChild.Polymorphic: 1
+TChild.Polymorphic: 1
+TOther.Polymorphic: 2
+TOther.Polymorphic: 2
+  }
 end.

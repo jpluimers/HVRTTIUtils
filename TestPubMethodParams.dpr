@@ -78,4 +78,15 @@ begin
   Test;
   Readln;
 
+  { Expected output like (all nil values must be nil, all non nil values must be non-nil):
+
+Scanning TMyClass
+Published methods in TMyClass
+function FourthPublished(A: array of Byte; const B: array of Byte; var C: array of Byte; out D: array of Byte): TComponent;
+procedure FifthPublished(Component1: TComponent; var Component2: TComponent; out Component3: TComponent; const Component4: TComponent);
+function SixthPublished(const A: string; var Two: Integer; out Three: TMyClass; Four: PInteger; Five: array of Byte; Six: Integer): string;
+Scanning TObject
+No published methods in TObject
+
+  }
 end.

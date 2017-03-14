@@ -4,7 +4,8 @@ program TestDmt;
 
 uses
   Classes,
-  SysUtils;
+  SysUtils,
+  HVVMT in 'HVVMT.pas';
 
 procedure GetDynaMethod;
 { function GetDynaMethod(vmt: TClass; selector: Smallint) : Pointer; }
@@ -73,53 +74,6 @@ asm
 end;
 
 type
-  PClass = ^TClass;
-  PSafeCallException = function(Self: TObject; ExceptObject: TObject; ExceptAddr: Pointer): HResult;
-  PAfterConstruction = procedure(Self: TObject);
-  PBeforeDestruction = procedure(Self: TObject);
-  PDispatch = procedure(Self: TObject; var Message);
-  PDefaultHandler = procedure(Self: TObject; var Message);
-  PNewInstance = function(Self: TClass): TObject;
-  PFreeInstance = procedure(Self: TObject);
-  PDestroy = procedure(Self: TObject; OuterMost: ShortInt);
-  TDMTIndex = Smallint;
-  PDmtIndices = ^TDmtIndices;
-  TDmtIndices = array [0 .. High(Word) - 1] of TDMTIndex;
-  PDmtMethods = ^TDmtMethods;
-  TDmtMethods = array [0 .. High(Word) - 1] of Pointer;
-  PDmt = ^TDmt;
-
-  TDmt = packed record
-    Count: Word;
-    Indicies: TDmtIndices; // really [0..Count-1]
-    Methods: TDmtMethods; // really [0..Count-1]
-  end;
-
-  PVmt = ^TVmt;
-
-  TVmt = packed record
-    SelfPtr: TClass;
-    IntfTable: Pointer;
-    AutoTable: Pointer;
-    InitTable: Pointer;
-    TypeInfo: Pointer;
-    FieldTable: Pointer;
-    MethodTable: Pointer;
-    DynamicTable: PDmt;
-    ClassName: PShortString;
-    InstanceSize: PLongint;
-    Parent: PClass;
-    SafeCallException: PSafeCallException;
-    AfterConstruction: PAfterConstruction;
-    BeforeDestruction: PBeforeDestruction;
-    Dispatch: PDispatch;
-    DefaultHandler: PDefaultHandler;
-    NewInstance: PNewInstance;
-    FreeInstance: PFreeInstance;
-    Destroy: PDestroy;
-    { UserDefinedVirtuals: array[0..999] of procedure; }
-  end;
-
   // For easier use of the "dynamic" arrays
   TDynamicMethodTable = record
     Count: Word;
@@ -127,13 +81,7 @@ type
     Methods: PDmtMethods; // really [0..Count-1]
   end;
 
-function GetVmt(AClass: TClass): PVmt;
-begin
-  Result := PVmt(AClass);
-  Dec(Result);
-end;
-
-function GetDmt(AClass: TClass): PDmt;
+function GetDmt(const AClass: TClass): PDmt;
 var
   Vmt: PVmt;
 begin
@@ -144,7 +92,7 @@ begin
     Result := nil;
 end;
 
-function GetDynamicMethodCount(AClass: TClass): Integer;
+function GetDynamicMethodCount(const AClass: TClass): Integer;
 var
   Dmt: PDmt;
 begin
@@ -155,7 +103,7 @@ begin
     Result := 0;
 end;
 
-function GetDynamicMethodIndex(AClass: TClass; Slot: Integer): Integer;
+function GetDynamicMethodIndex(const AClass: TClass; const Slot: Integer): Integer;
 var
   Dmt: PDmt;
 begin
@@ -166,7 +114,7 @@ begin
     Result := 0; // Or raise exception
 end;
 
-function GetDynamicMethodProc(AClass: TClass; Slot: Integer): Pointer;
+function GetDynamicMethodProc(const AClass: TClass; const Slot: Integer): Pointer;
 var
   Dmt: PDmt;
   DmtMethods: PDmtMethods;
@@ -181,7 +129,7 @@ begin
     Result := nil; // Or raise exception
 end;
 
-function GetDynamicMethodTable(AClass: TClass): TDynamicMethodTable;
+function GetDynamicMethodTable(const AClass: TClass): TDynamicMethodTable;
 var
   Dmt: PDmt;
 begin
@@ -196,16 +144,18 @@ begin
     Result.Count := 0;
 end;
 
-function FindDynamicMethod(AClass: TClass; DMTIndex: TDMTIndex): Pointer;
+function FindDynamicMethod(const AClass: TClass; const DMTIndex: TDMTIndex): Pointer;
 // Pascal variant of the faster BASM version in System.GetDynaMethod
 var
+  CurrentClass: TClass;
   Dmt: PDmt;
   DmtMethods: PDmtMethods;
   i: Integer;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Dmt := GetDmt(AClass);
+    Dmt := GetDmt(CurrentClass);
     if Assigned(Dmt) then
       for i := 0 to Dmt.Count - 1 do
         if DMTIndex = Dmt.Indicies[i] then
@@ -215,32 +165,34 @@ begin
           Exit;
         end;
     // Not in this class, try the parent class
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
   Result := nil;
 end;
 
-procedure DumpDynamicMethods(AClass: TClass);
+procedure DumpDynamicMethods(const AClass: TClass);
 var
+  CurrentClass: TClass;
   i: Integer;
   Index: Integer;
   MethodAddr: Pointer;
 begin
-  while Assigned(AClass) do
+  CurrentClass := AClass;
+  while Assigned(CurrentClass) do
   begin
-    Writeln('Dynamic methods in ', AClass.ClassName);
-    for i := 0 to GetDynamicMethodCount(AClass) - 1 do
+    Writeln('Dynamic methods in ', CurrentClass.ClassName);
+    for i := 0 to GetDynamicMethodCount(CurrentClass) - 1 do
     begin
-      Index := GetDynamicMethodIndex(AClass, i);
-      MethodAddr := GetDynamicMethodProc(AClass, i);
+      Index := GetDynamicMethodIndex(CurrentClass, i);
+      MethodAddr := GetDynamicMethodProc(CurrentClass, i);
       Writeln(Format('%d. Index = %2d, MethodAddr = %p', [i, Index, MethodAddr]));
     end;
-    AClass := AClass.ClassParent;
+    CurrentClass := CurrentClass.ClassParent;
   end;
 end;
 
-procedure DumpFoundDynamicMethods(AClass: TClass);
-  procedure Dump(DMTIndex: TDMTIndex);
+procedure DumpFoundDynamicMethods(const AClass: TClass);
+  procedure Dump(const DMTIndex: TDMTIndex);
   var
     Proc: Pointer;
   begin
@@ -379,7 +331,7 @@ begin
   for i := 0 to Instances.Count - 1 do
   begin
     Instance := Instances.List[i];
-    Assert(Instance.ClassType = TMyClass);
+    Assert(Instance.ClassType = TMyClass, 'Instance.ClassType ' + Instance.ClassType.ClassName + ' <> TMyClass ' + TMyClass.ClassName);
     FirstDynamic(Instance);
   end;
 end;
@@ -463,4 +415,35 @@ begin
   end;
   Readln;
 
+  { Not sure if this is the Expected output:
+
+-1
+Using compiler-magic/RTL mechanics:
+Call dynamic instance method (System._CallDynaInst)
+Find and call dynamic instance method (System._FindDynaInst)
+TMyDescendent.SecondDynamic
+Call dynamic class method (System._CallDynaClass)
+TMyDescendent.ThirdDynamic
+Find and call dynamic class method (System._FindDynaClass)
+TMyDescendent.FourthDynamic
+TMyDescendent.FourthDynamic
+Call dynamic instance method via BASM:
+Dynamic methods in TMyDescendent
+0. Index = -1, MethodAddr = 00410854
+1. Index = -2, MethodAddr = 00410858
+2. Index = -3, MethodAddr = 004108AC
+3. Index = -4, MethodAddr = 00410900
+Dynamic methods in TMyClass
+0. Index = -1, MethodAddr = 0041074C
+1. Index = -2, MethodAddr = 00403080
+2. Index = -3, MethodAddr = 00410750
+3. Index = -4, MethodAddr = 004107A4
+4. Index = 42, MethodAddr = 004107F8
+Dynamic methods in TObject
+Dynamic Method Index = -1, Method = 00410854
+Dynamic Method Index =  1, Method = 00000000
+Dynamic Method Index = 13, Method = 00000000
+Dynamic Method Index = 42, Method = 004107F8
+Instance.ClassType TMyDescendent2 <> TMyClass TMyClass (C:\Users\Developer\Versioned\HVRTTIUtils\TestDmt.dpr, line 334)
+  }
 end.

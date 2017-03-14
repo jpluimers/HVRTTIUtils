@@ -5,15 +5,20 @@ interface
 uses
   Classes,
   SysUtils,
+{$IF CompilerVersion <= 20} // Delphi 2009 and older
+  IntfInfo,
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
   TypInfo,
   HVVMT;
 
 type
   TParamLocation = (plUnknown = -1, plEAX = 0, plEDX = 1, plECX = 2, plStack1 = 3, plStackN = $FFFF);
-{$IF Not Declared(TypInfo.TCallConv)}
-  TCallConv = (ccReg, ccCdecl, ccPascal, ccStdCall, ccSafeCall);
-{$IFEND}
-{$IF Not Declared(TypInfo.TParamFlag)}
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+  TCallConv = TypInfo.TCallConv;
+{$ELSE}
+  TCallConv = IntfInfo.TCallConv;
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+{$IF not Declared(TParamFlag)}
   TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
   TParamFlags = set of TParamFlag;
 {$IFEND}
@@ -21,8 +26,8 @@ type
 
   TMethodParam = record
     Flags: TParamFlags;
-    ParamName: string;
-    TypeName: string;
+    ParamName: TSymbolName; // same type as System.TypInfo.TTypeData.ParamList[].ParamName: ShortString; so use TSymbolName
+    TypeName: TSymbolName; // same type as System.TypInfo.TTypeInfo.Name: TSymbolName;
     TypeInfo: PTypeInfo;
     Location: TParamLocation;
   end;
@@ -31,56 +36,63 @@ type
   PMethodSignature = ^TMethodSignature;
 
   TMethodSignature = record
-    Name: string;
+    Name: TSymbolName; // same type as TPublishedMethod.Name: TSymbolName
     MethodKind: TMethodKind;
     CallConv: TCallConv;
     HasSignatureRTTI: Boolean;
     Address: Pointer;
     ParamCount: Byte;
     Parameters: TMethodParamList;
-    ResultTypeName: string;
+    ResultTypeName: TSymbolName; // same type as System.TypInfo.TTypeInfo.Name: TSymbolName;
     ResultTypeInfo: PTypeInfo;
   end;
+  TMethodSignatureList = array of TMethodSignature;
 
   PPackedShortString = ^TPackedShortString;
   TPackedShortString = string[1];
 
-function Skip(Value: PShortString): Pointer; overload;
-function Skip(Value: PPackedShortString; var NextField { : Pointer } ): PShortString; overload;
-function Skip(CurrField: Pointer; FieldSize: Integer): Pointer; overload;
+function Skip(const Value: PSymbolName): Pointer; overload;
+function Skip(const Value: PPackedShortString; var NextField { : Pointer } ): PSymbolName; overload; experimental; // TODO -o##jpl : change to type PSymbolName ??
+function Skip(const CurrField: Pointer; const FieldSize: Integer): Pointer; overload; experimental;
 
-function Dereference(P: PPTypeInfo): PTypeInfo;
+function Dereference(const P: PPTypeInfo): PTypeInfo;
 
-function MethodKindString(MethodKind: TMethodKind): string;
+function MethodKindString(const MethodKind: TMethodKind): string;
 
-function MethodParamString(const MethodParam: TMethodParam; ExcoticFlags: Boolean = False): string;
+function MethodParamString(const MethodParam: TMethodParam; const ExcoticFlags: Boolean = False): string;
 
-function MethodParametesString(const MethodSignature: TMethodSignature; SkipSelf: Boolean = True): string;
+function MethodParametesString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
 
-function MethodSignatureToString(const Name: string; const MethodSignature: TMethodSignature): string; overload;
+function MethodSignatureToString(const Name: TSymbolName; const MethodSignature: TMethodSignature): string; overload;
 
 function MethodSignatureToString(const MethodSignature: TMethodSignature): string; overload;
 
 implementation
 
-function Skip(Value: PShortString): Pointer; overload;
+function Skip(const Value: PSymbolName): Pointer;
 begin
   Result := Value;
-  Inc(PAnsiChar(Result), SizeOf(Value^[0]) + Length(Value^));
+  Inc(PSymbolChar(Result), SizeOf(Value^[0]) + Length(Value^));
 end;
 
-function Skip(Value: PPackedShortString; var NextField { : Pointer } ): PShortString; overload;
+function Skip(const Value: PPackedShortString; var NextField): PSymbolName;
 begin
-  Result := PShortString(Value);
-  Inc(PAnsiChar(NextField), SizeOf(Char) + Length(Result^) - SizeOf(TPackedShortString));
+  asm
+    int 3
+  end;
+  Result := PSymbolName(Value); // TODO: -o##jpl  change to Value type PSymbolName ?? 
+  Inc(PSymbolChar(NextField), SizeOf(Char) + Length(Result^) - SizeOf(TPackedShortString)); // TODO -o##jpl : is SizeOf(Char) correct?
 end;
 
-function Skip(CurrField: Pointer; FieldSize: Integer): Pointer; overload;
+function Skip(const CurrField: Pointer; const FieldSize: Integer): Pointer;
 begin
-  Result := PAnsiChar(Currfield) + FieldSize;
+  asm
+    int 3
+  end;
+  Result := PSymbolChar(Currfield) + FieldSize;
 end;
 
-function Dereference(P: PPTypeInfo): PTypeInfo;
+function Dereference(const P: PPTypeInfo): PTypeInfo;
 begin
   if Assigned(P) then
     Result := P^
@@ -88,7 +100,7 @@ begin
     Result := nil;
 end;
 
-function MethodKindString(MethodKind: TMethodKind): string;
+function MethodKindString(const MethodKind: TMethodKind): string;
 begin
   case MethodKind of
     mkSafeProcedure, //
@@ -108,7 +120,7 @@ begin
   end;
 end;
 
-function MethodParamString(const MethodParam: TMethodParam; ExcoticFlags: Boolean = False): string;
+function MethodParamString(const MethodParam: TMethodParam; const ExcoticFlags: Boolean = False): string;
 begin
   if pfVar in MethodParam.Flags then
     Result := 'var '
@@ -124,17 +136,19 @@ begin
       Result := '{addr} ' + Result;
     if pfReference in MethodParam.Flags then
       Result := '{ref} ' + Result;
+{$IF Declared(pfResult)}
     if pfResult in MethodParam.Flags then
       Result := '{result} ' + Result;
+{$IFEND Declared(pfResult)}
   end;
 
-  Result := Result + MethodParam.ParamName + ': ';
+  Result := Result + string(MethodParam.ParamName) + ': ';
   if pfArray in MethodParam.Flags then
     Result := Result + 'array of ';
-  Result := Result + MethodParam.TypeName;
+  Result := Result + string(MethodParam.TypeName);
 end;
 
-function MethodParametesString(const MethodSignature: TMethodSignature; SkipSelf: Boolean = True): string;
+function MethodParametesString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
 var
   i: Integer;
   MethodParam: PMethodParam;
@@ -154,8 +168,10 @@ begin
         (MethodParam.TypeInfo.Kind in [tkInterface, tkClass]) //
         then
           Continue;
+{$IF Declared(pfResult)}
       if pfResult in MethodParam.Flags then
         Continue;
+{$IFEND Declared(pfResult)}
       if ParamIndex > 0 then
         Result := Result + '; ';
       Result := Result + MethodParamString(MethodParam^);
@@ -165,7 +181,7 @@ begin
     Result := '{??}';
 end;
 
-function CallingConventionToString(CallConv: TCallConv): string;
+function CallingConventionToString(const CallConv: TCallConv): string;
 begin
   case CallConv of
     ccReg:
@@ -183,20 +199,20 @@ begin
   end;
 end;
 
-function MethodSignatureToString(const Name: string; const MethodSignature: TMethodSignature): string; overload;
+function MethodSignatureToString(const Name: TSymbolName; const MethodSignature: TMethodSignature): string;
 begin
   Result := Format('%s %s(%s)', //
     [MethodKindString(MethodSignature.MethodKind), //
     Name, //
     MethodParametesString(MethodSignature)]);
   if MethodSignature.HasSignatureRTTI and (MethodSignature.MethodKind = mkFunction) then
-    Result := Result + ': ' + MethodSignature.ResultTypeName;
+    Result := Result + ': ' + string(MethodSignature.ResultTypeName);
   Result := Result + ';';
   if MethodSignature.CallConv <> ccReg then
     Result := Result + ' ' + CallingConventionToString(MethodSignature.CallConv) + ';';
 end;
 
-function MethodSignatureToString(const MethodSignature: TMethodSignature): string; overload;
+function MethodSignatureToString(const MethodSignature: TMethodSignature): string;
 begin
   Result := MethodSignatureToString(MethodSignature.Name, MethodSignature);
 end;
