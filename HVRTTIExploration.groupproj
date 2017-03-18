@@ -18,13 +18,14 @@
     <Projects Include="TestPubMethodParams.dproj" />
     <Projects Include="TestPubMethodTable.dproj" />
     <Projects Include="TestSimpleInterfaceRTTI.dproj" />
+    <Projects Include="Tests\HVRTTIUtilsTests.dproj" />
     <Projects Include="TestVmt.dproj" />
   </ItemGroup>
   <ProjectExtensions>
     <Borland.Personality>Default.Personality</Borland.Personality>
     <Borland.ProjectType />
     <BorlandProject>
-  <BorlandProject xmlns=""> <Default.Personality> </Default.Personality> </BorlandProject></BorlandProject>
+<BorlandProject xmlns=""><Default.Personality></Default.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Target Name="TestVmt">
     <MSBuild Projects="TestVmt.dproj" Targets="" />
@@ -161,14 +162,23 @@
   <Target Name="TestMorePubMethodParams:Make">
     <MSBuild Projects="TestMorePubMethodParams.dproj" Targets="Make" />
   </Target>
+  <Target Name="HVRTTIUtilsTests">
+    <MSBuild Projects="Tests\HVRTTIUtilsTests.dproj" Targets="" />
+  </Target>
+  <Target Name="HVRTTIUtilsTests:Clean">
+    <MSBuild Projects="Tests\HVRTTIUtilsTests.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="HVRTTIUtilsTests:Make">
+    <MSBuild Projects="Tests\HVRTTIUtilsTests.dproj" Targets="Make" />
+  </Target>
   <Target Name="Build">
-    <CallTarget Targets="TestVmt;TestDmt;TestMPlus;TestMethodTable;TestPubMethodTable;TestPubMethodParams;TestPubFieldTable;TestIntfTable;TestSimpleInterfaceRTTI;TestInterfaceVariants;TestPolyPub;TestHVMethodInfoClasses;TestExtendedInterfaceRTTI;TestPublishedMethodParams;TestMorePubMethodParams" />
+    <CallTarget Targets="TestVmt;TestDmt;TestMPlus;TestMethodTable;TestPubMethodTable;TestPubMethodParams;TestPubFieldTable;TestIntfTable;TestSimpleInterfaceRTTI;TestInterfaceVariants;TestPolyPub;TestHVMethodInfoClasses;TestExtendedInterfaceRTTI;TestPublishedMethodParams;TestMorePubMethodParams;HVRTTIUtilsTests" />
   </Target>
   <Target Name="Clean">
-    <CallTarget Targets="TestVmt:Clean;TestDmt:Clean;TestMPlus:Clean;TestMethodTable:Clean;TestPubMethodTable:Clean;TestPubMethodParams:Clean;TestPubFieldTable:Clean;TestIntfTable:Clean;TestSimpleInterfaceRTTI:Clean;TestInterfaceVariants:Clean;TestPolyPub:Clean;TestHVMethodInfoClasses:Clean;TestExtendedInterfaceRTTI:Clean;TestPublishedMethodParams:Clean;TestMorePubMethodParams:Clean" />
+    <CallTarget Targets="TestVmt:Clean;TestDmt:Clean;TestMPlus:Clean;TestMethodTable:Clean;TestPubMethodTable:Clean;TestPubMethodParams:Clean;TestPubFieldTable:Clean;TestIntfTable:Clean;TestSimpleInterfaceRTTI:Clean;TestInterfaceVariants:Clean;TestPolyPub:Clean;TestHVMethodInfoClasses:Clean;TestExtendedInterfaceRTTI:Clean;TestPublishedMethodParams:Clean;TestMorePubMethodParams:Clean;HVRTTIUtilsTests:Clean" />
   </Target>
   <Target Name="Make">
-    <CallTarget Targets="TestVmt:Make;TestDmt:Make;TestMPlus:Make;TestMethodTable:Make;TestPubMethodTable:Make;TestPubMethodParams:Make;TestPubFieldTable:Make;TestIntfTable:Make;TestSimpleInterfaceRTTI:Make;TestInterfaceVariants:Make;TestPolyPub:Make;TestHVMethodInfoClasses:Make;TestExtendedInterfaceRTTI:Make;TestPublishedMethodParams:Make;TestMorePubMethodParams:Make" />
+    <CallTarget Targets="TestVmt:Make;TestDmt:Make;TestMPlus:Make;TestMethodTable:Make;TestPubMethodTable:Make;TestPubMethodParams:Make;TestPubFieldTable:Make;TestIntfTable:Make;TestSimpleInterfaceRTTI:Make;TestInterfaceVariants:Make;TestPolyPub:Make;TestHVMethodInfoClasses:Make;TestExtendedInterfaceRTTI:Make;TestPublishedMethodParams:Make;TestMorePubMethodParams:Make;HVRTTIUtilsTests:Make" />
   </Target>
   <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
 </Project>

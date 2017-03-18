@@ -6,11 +6,6 @@ uses
   SysUtils,
   HVVMT in 'HVVMT.pas';
 
-function GetVmt(const Instance: TObject): PVmt; overload;
-begin
-  Result := HVVMT.GetVmt(Instance.ClassType);
-end;
-
 type
   TMyClass = class
     function SafeCallException(ExceptObject: TObject; ExceptAddr: Pointer): HResult; override;
@@ -222,5 +217,9 @@ TMyClass.FreeInstance
 TMyClass.BeforeDestruction
 TMyClass.Destroy
 TMyClass.FreeInstance
+
+TMyDescendent.NewInstance
+TMyDescendent.AfterConstruction
+123
   }
 end.

@@ -142,7 +142,8 @@ type
   end;
 
 // Virtual method table
-function GetVmt(const AClass: TClass): PVmt;
+function GetVmt(const AClass: TClass): PVmt; overload;
+function GetVmt(const Instance: TObject): PVmt; overload;
 
 // Published methods
 function GetPmt(const AClass: TClass): PPmt;
@@ -189,6 +190,11 @@ begin
   Dec(Result);
   if Result.SelfPtr <> AClass then
     raise Exception.CreateFmt('Vmt of %s is not as expected', [AClass.Classname]);
+end;
+
+function GetVmt(const Instance: TObject): PVmt;
+begin
+  Result := GetVmt(Instance.ClassType);
 end;
 
 // Published methods
