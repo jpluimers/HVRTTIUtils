@@ -259,12 +259,18 @@ var
   i: Integer;
   Instance: TMyClass;
   FirstDynamic: procedure(Self: TObject);
+{$IFOPT C+} // If asserts are on
+  ActualFirstDynamic: procedure of object;
+{$ENDIF C+} // If asserts are on
 begin
   FirstDynamic := @TMyClass.FirstDynamic;
   for i := 0 to Instances.Count - 1 do
   begin
     Instance := Instances.List[i];
-    Assert(Instance.ClassType = TMyClass, 'Instance.ClassType ' + Instance.ClassType.ClassName + ' <> TMyClass ' + TMyClass.ClassName);
+{$IFOPT C+} // If asserts are on
+    ActualFirstDynamic := Instance.FirstDynamic;
+    Assert(TMethod(ActualFirstDynamic).Code = @FirstDynamic, 'Instance.FirstDynamic of ' + Instance.ClassType.ClassName + ' <> TMyClass.FirstDynamic thus cannot be called with FasterDynamicListLoop');
+{$ENDIF C+} // If asserts are on
     FirstDynamic(Instance);
   end;
 end;

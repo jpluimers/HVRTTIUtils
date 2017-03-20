@@ -51,7 +51,7 @@ type
   /// - DefField
   /// - DefProp
   /// - DefMethod
-  MPlusTests = class(TTestCase)
+  TMPlusTests = class(TTestCase)
   strict private
     function BuildTMMinus: TSubject;
     function BuildTMPlus: TSubject;
@@ -109,24 +109,24 @@ begin
   Result := FInstance;
 end;
 
-{ MPlusTests }
+{ TMPlusTests }
 
-function MPlusTests.BuildTMMinus: TSubject;
+function TMPlusTests.BuildTMMinus: TSubject;
 begin
   Result := TSubject.Create(TMMinus.Create());
 end;
 
-function MPlusTests.BuildTMPlus: TSubject;
+function TMPlusTests.BuildTMPlus: TSubject;
 begin
   Result := TSubject.Create(TMPlus.Create());
 end;
 
-procedure MPlusTests.TMMinus_ClassName_HasValue;
+procedure TMPlusTests.TMMinus_ClassName_HasValue;
 begin
   CheckNotEquals('', TMMinus.ClassName);
 end;
 
-procedure MPlusTests.TMMinus_Create_FieldAddress_DefField_HasValue;
+procedure TMPlusTests.TMMinus_Create_FieldAddress_DefField_HasValue;
 var
   SubjectUnderTest: TSubject;
 begin
@@ -134,7 +134,7 @@ begin
   CheckEqualsPointer(nil, SubjectUnderTest.Instance.FieldAddress('DefField'));
 end;
 
-procedure MPlusTests.TMPlus_Create_FieldAddress_DefField_HasValue;
+procedure TMPlusTests.TMPlus_Create_FieldAddress_DefField_HasValue;
 var
   SubjectUnderTest: TSubject;
 begin
@@ -142,25 +142,25 @@ begin
   CheckNotEqualsPointer(nil, SubjectUnderTest.Instance.FieldAddress('DefField'));
 end;
 
-procedure MPlusTests.TMMinus_PropInfo_DefProp_HasValue;
+procedure TMPlusTests.TMMinus_PropInfo_DefProp_HasValue;
 begin
   CheckEqualsPointer(nil, TypInfo.GetPropInfo(TMMinus, 'DefProp'));
 end;
 
-procedure MPlusTests.TMMinus_MethodAddress_DefMethod_HasValue;
+procedure TMPlusTests.TMMinus_MethodAddress_DefMethod_HasValue;
 begin
   CheckEqualsPointer(nil, TMMinus.MethodAddress('DefMethod'));
 end;
 
-procedure MPlusTests.TMMinus_Create_FieldAddress_PubField_HasValue;
+procedure TMPlusTests.TMMinus_Create_FieldAddress_PubField_HasValue;
 var
-  SubjectUnderTest: TSubject;
+  SubjectUnderTest: ISubject;
 begin
   SubjectUnderTest := BuildTMMinus;
   CheckNotEqualsPointer(nil, SubjectUnderTest.Instance.FieldAddress('PubField'));
 end;
 
-procedure MPlusTests.TMPlus_Create_FieldAddress_PubField_HasValue;
+procedure TMPlusTests.TMPlus_Create_FieldAddress_PubField_HasValue;
 var
   SubjectUnderTest: TSubject;
 begin
@@ -168,51 +168,39 @@ begin
   CheckNotEqualsPointer(nil, SubjectUnderTest.Instance.FieldAddress('PubField'));
 end;
 
-procedure MPlusTests.TMPlus_MethodAddress_DefMethod_HasValue;
+procedure TMPlusTests.TMPlus_MethodAddress_DefMethod_HasValue;
 begin
   CheckNotEqualsPointer(nil, TMPlus.MethodAddress('DefMethod'));
 end;
 
-procedure MPlusTests.TMMinus_PropInfo_PubProp_HasValue;
+procedure TMPlusTests.TMMinus_PropInfo_PubProp_HasValue;
 begin
   CheckNotEqualsPointer(nil, TypInfo.GetPropInfo(TMMinus, 'PubProp'));
 end;
 
-procedure MPlusTests.TMMinus_MethodAddress_PubMethod_HasValue;
+procedure TMPlusTests.TMMinus_MethodAddress_PubMethod_HasValue;
 begin
   CheckNotEqualsPointer(nil, TMMinus.MethodAddress('PubMethod'));
 end;
 
-procedure MPlusTests.TMPlus_MethodAddress_PubMethod_HasValue;
+procedure TMPlusTests.TMPlus_MethodAddress_PubMethod_HasValue;
 begin
   CheckNotEqualsPointer(nil, TMPlus.MethodAddress('PubMethod'));
 end;
 
-procedure MPlusTests.TMPlus_PropInfo_DefProp_HasValue;
+procedure TMPlusTests.TMPlus_PropInfo_DefProp_HasValue;
 begin
   CheckNotEqualsPointer(nil, TypInfo.GetPropInfo(TMPlus, 'DefProp'));
 end;
 
-procedure MPlusTests.TMPlus_PropInfo_PubProp_HasValue;
+procedure TMPlusTests.TMPlus_PropInfo_PubProp_HasValue;
 begin
   CheckNotEqualsPointer(nil, TypInfo.GetPropInfo(TMPlus, 'PubProp'));
 end;
 
-procedure MPlusTests.TMPlus_ClassName_HasValue;
+procedure TMPlusTests.TMPlus_ClassName_HasValue;
 begin
   CheckNotEquals('', TMPlus.ClassName);
-end;
-
-procedure DumpMClass(AClass: TClass);
-begin
-  Writeln(Format('Testing %s:', [AClass.ClassName]));
-  Writeln(Format('DefField=%p', [AClass.Create.FieldAddress('DefField')]));
-  Writeln(Format('DefProp=%p', [TypInfo.GetPropInfo(AClass, 'DefProp')]));
-  Writeln(Format('DefMethod=%p', [AClass.MethodAddress('DefMethod')]));
-  Writeln(Format('PubField=%p', [AClass.Create.FieldAddress('PubField')]));
-  Writeln(Format('PubProp=%p', [TypInfo.GetPropInfo(AClass, 'PubProp')]));
-  Writeln(Format('PubMethod=%p', [AClass.MethodAddress('PubMethod')]));
-  Writeln;
 end;
 
 { TMMinus }
@@ -236,5 +224,5 @@ begin
 end;
 
 initialization
-  RegisterTest(MPlusTests.Suite);
+  RegisterTest(TMPlusTests.Suite);
 end.

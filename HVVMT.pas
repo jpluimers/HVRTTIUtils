@@ -525,6 +525,7 @@ begin
     Result := nil;
 end;
 
+{$IFOPT C+} // If asserts are on
 const
   TSymbolChar_Size = SizeOf(TSymbolChar);
 {$IF Declared(TVmtFieldEntry)}
@@ -537,5 +538,6 @@ initialization
   Assert(TPublishedField_Size = TVmtFieldEntry_Size);
 {$IFEND Declared(TVmtFieldEntry)}
 finalization
+{$ENDIF C+} // If asserts are on
 
 end.

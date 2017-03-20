@@ -71,6 +71,7 @@ var
 begin
   Assert(Assigned(ClassTypeInfo));
   Assert(ClassTypeInfo.Kind = tkClass);
+
   // Class
   TypeData := GetTypeData(ClassTypeInfo);
   Finalize(ClassInfo);
@@ -159,6 +160,8 @@ begin
 end;
 
 {$WARN SYMBOL_DEPRECATED OFF}
+
+{$IFOPT C+} // If asserts are on
 {$IF Declared(TCallingConvention)}
 
 const
@@ -176,5 +179,6 @@ initialization
 finalization
 
 {$IFEND Declared(TCallingConvention)}
+{$ENDIF C+} // If asserts are on
 
 end.

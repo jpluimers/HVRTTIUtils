@@ -73,8 +73,10 @@ type
 type
   TDmtTestCase = class(TTestCase)
   strict private
+    FSkipAddState: Boolean;
     FState: string;
     FStateStrings: TStrings;
+    SkipAddState: Boolean;
     function Build: TSubject;
     function BuildDescendent: TSubject;
   private
@@ -204,13 +206,19 @@ var
   i: Integer;
   Instance: TMyClass;
   FirstDynamic: procedure(Self: TObject);
+{$IFOPT C+} // If asserts are on
+  ActualFirstDynamic: procedure of object;
+{$ENDIF C+} // If asserts are on
 begin
   FirstDynamic := @TMyClass.FirstDynamic;
   for i := 0 to Instances.Count - 1 do
   begin
     Current := Instances.Objects[i];
     Instance := Current as TMyClass;
-    Assert(Instance.ClassType = TMyClass, 'Instance.ClassType ' + Instance.ClassType.ClassName + ' <> TMyClass ' + TMyClass.ClassName);
+{$IFOPT C+} // If asserts are on
+    ActualFirstDynamic := Instance.FirstDynamic;
+    Assert(TMethod(ActualFirstDynamic).Code = @FirstDynamic, 'Instance.FirstDynamic of ' + Instance.ClassType.ClassName + ' <> TMyClass.FirstDynamic thus cannot be called with FasterDynamicListLoop');
+{$ENDIF C+} // If asserts are on
     FirstDynamic(Instance);
   end;
 end;
@@ -371,6 +379,8 @@ end;
 
 procedure TDmtTestCase.AddState(const Value: string);
 begin
+  if FSkipAddState then
+    Exit;
   if not Assigned(FStateStrings) then
   begin
     FStateStrings := TStringList.Create();
@@ -428,7 +438,7 @@ end;
 
 procedure TDmtTestCase.TMyClass_Create_FirstDynamic_State_Matches;
 var
-  SubjectUnderTest: TSubject;
+  SubjectUnderTest: ISubject;
 begin
   SubjectUnderTest := Build;
 //  Call dynamic instance method (System._CallDynaInst)
@@ -488,7 +498,7 @@ end;
 
 procedure TDmtTestCase.TMyDescendent_Create_CallFirstDynamicMethod_State_Matches;
 var
-  SubjectUnderTest: TSubject;
+  SubjectUnderTest: ISubject;
 begin
   SubjectUnderTest := BuildDescendent;
 // Call dynamic instance method via BASM
@@ -530,9 +540,18 @@ begin
   CheckEquals(TMyClass.ClassName + '.FirstDynamic,'+TMyClass.ClassName + '.FirstDynamic,'+TMyClass.ClassName + '.FirstDynamic', State);
 end;
 
+procedure WaitForNewTickCount;
+var
+  StartTick: Cardinal;
+begin
+  StartTick := GetTickCount();
+  while StartTick = GetTickCount do
+    ;
+end;
+
 procedure TDmtTestCase.TMyDescendent_Create_FasterDynamicLoop_Outperforms_SlowDynamicLoop;
 const
-  CountPlus1 = 1000; // 10000; // 1000000;
+  CountPlus1 = 2000000;
   procedure SlowDynamicLoop(Instance: TMyClass);
   var
     i: Integer;
@@ -552,29 +571,49 @@ const
   end;
 var
   FasterElapsedTicks: Cardinal;
-  FinishTime: Cardinal;
+  FasterFinishTime: Cardinal;
+  FasterStartTime: Cardinal;
   Instance: TMyClass;
-  IntermediateTime: Cardinal;
   SlowElapsedTicks: Cardinal;
-  StartTime: Cardinal;
+  SlowFinishTime: Cardinal;
+  SlowStartTime: Cardinal;
+  procedure Measure();
+  begin
+    WaitForNewTickCount();
+    SlowStartTime := GetTickCount();
+    SlowDynamicLoop(Instance);
+    SlowFinishTime := GetTickCount();
+
+    WaitForNewTickCount();
+    FasterStartTime := GetTickCount();
+    FasterDynamicLoop(Instance);
+    FasterFinishTime := GetTickCount();
+  end;
+var
+  LSkipAddState: Boolean;
   SubjectUnderTest: TSubject;
 begin
-  SubjectUnderTest := BuildDescendent;
-  StartTime := GetTickCount();
-  Instance := SubjectUnderTest.Instance;
-  SlowDynamicLoop(Instance);
-  IntermediateTime := GetTickCount();
-  FasterDynamicLoop(Instance);
-  FinishTime := GetTickCount();
-  SlowElapsedTicks := IntermediateTime - StartTime;
-  FasterElapsedTicks := FinishTime - IntermediateTime;
-  CheckTrue(FasterElapsedTicks < SlowElapsedTicks, Format('SlowDynamicLoop took %d ticks; FasterDynamicLoop %d ticks', [SlowElapsedTicks, FasterElapsedTicks]));
+  LSkipAddState := FSkipAddState;
+  try
+    FSkipAddState := True;
+    SubjectUnderTest := BuildDescendent;
+    Instance := SubjectUnderTest.Instance;
+
+    Measure();
+    Measure();
+
+    SlowElapsedTicks := SlowFinishTime - SlowStartTime;
+    FasterElapsedTicks := FasterFinishTime - FasterStartTime;
+    CheckTrue(FasterElapsedTicks < SlowElapsedTicks, Format('SlowDynamicLoop took %d ticks; FasterDynamicLoop %d ticks', [SlowElapsedTicks, FasterElapsedTicks]));
+  finally
+    FSkipAddState := LSkipAddState;
+  end;
 end;
 
 procedure TDmtTestCase.TMyDescendent_Create_FourthDynamic_State_Matches;
 var
   Proc: procedure of object;
-  SubjectUnderTest: TSubject;
+  SubjectUnderTest: ISubject;
 begin
   SubjectUnderTest := BuildDescendent;
 // Find and call dynamic class method (System._FindDynaClass)
@@ -586,7 +625,7 @@ end;
 procedure TDmtTestCase.TMyDescendent_Create_SecondDynamic_State_Matches;
 var
   Proc: procedure of object;
-  SubjectUnderTest: TSubject;
+  SubjectUnderTest: ISubject;
 begin
   SubjectUnderTest := BuildDescendent;
 //  Find and call dynamic instance method (System._FindDynaInst)
@@ -606,7 +645,7 @@ end;
 
 procedure TDmtTestCase.TMyDescendent_Create_StaticCallFirstDynamicMethod_State_Matches;
 var
-  SubjectUnderTest: TSubject;
+  SubjectUnderTest: ISubject;
 begin
   SubjectUnderTest := BuildDescendent;
 // Call dynamic instance method via BASM
@@ -616,7 +655,7 @@ end;
 
 procedure TDmtTestCase.TMyDescendent_Create_ThirdDynamic_State_Matches;
 var
-  SubjectUnderTest: TSubject;
+  SubjectUnderTest: ISubject;
 begin
   SubjectUnderTest := BuildDescendent;
   SubjectUnderTest.Instance.ThirdDynamic;
