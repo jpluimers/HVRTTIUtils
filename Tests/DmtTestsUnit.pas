@@ -112,7 +112,8 @@ uses
   Windows,
   SysUtils,
   HVVMT,
-  HVDMT;
+  HVDMT,
+  AbstractTestHelperUnit;
 
 var
   FVmtTestCase: TDmtTestCase = nil;
@@ -404,12 +405,12 @@ var
 begin
   for DynamicMethod in DynamicMethods do
   begin
-    CheckNotEquals(0, Integer(Pointer(DynamicMethod.ClassType)), 'DynamicMethod.ClassType');
+    CheckNotEqualsPointer(nil, Pointer(DynamicMethod.ClassType), 'DynamicMethod.ClassType');
     // Compiler generated indexes are negative;
     // user generated (using the `message` keyword can be positive or negative but are usually positive
     CheckNotEquals(0, DynamicMethod.Index, 'DynamicMethod.Index');
     if not AllowNilMethodAddr then
-      CheckNotEquals(0, Integer(DynamicMethod.MethodAddr), 'DynamicMethod.MethodAddr');
+      CheckNotEqualsPointer(nil, DynamicMethod.MethodAddr, 'DynamicMethod.MethodAddr');
   end;
 end;
 
@@ -567,7 +568,7 @@ begin
   FinishTime := GetTickCount();
   SlowElapsedTicks := IntermediateTime - StartTime;
   FasterElapsedTicks := FinishTime - IntermediateTime;
-  CheckTrue(FasterElapsedTicks < SlowElapsedTicks);
+  CheckTrue(FasterElapsedTicks < SlowElapsedTicks, Format('SlowDynamicLoop took %d ticks; FasterDynamicLoop %d ticks', [SlowElapsedTicks, FasterElapsedTicks]));
 end;
 
 procedure TDmtTestCase.TMyDescendent_Create_FourthDynamic_State_Matches;
