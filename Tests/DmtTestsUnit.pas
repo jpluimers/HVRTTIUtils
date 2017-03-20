@@ -203,13 +203,20 @@ var
   i: Integer;
   Instance: TMyClass;
   FirstDynamic: procedure(Self: TObject);
+{$IFOPT C+} // If asserts are on
+  ActualFirstDynamic: procedure of object;
+{$ENDIF}
 begin
   FirstDynamic := @TMyClass.FirstDynamic;
   for i := 0 to Instances.Count - 1 do
   begin
     Current := Instances.Objects[i];
     Instance := Current as TMyClass;
-    Assert(Instance.ClassType = TMyClass, 'Instance.ClassType ' + Instance.ClassType.ClassName + ' <> TMyClass ' + TMyClass.ClassName);
+{$IFOPT C+} // If asserts are on
+    ActualFirstDynamic := Instance.FirstDynamic;
+    Assert(TMethod(ActualFirstDynamic).Code = @FirstDynamic, 'Instance.FirstDynamic of ' + Instance.ClassType.ClassName + ' <> TMyClass.FirstDynamic thus cannot be called with FasterDynamicListLoop');
+//    Assert(Instance.ClassType = TMyClass, 'Instance.ClassType ' + Instance.ClassType.ClassName + ' <> TMyClass ' + TMyClass.ClassName);
+{$ENDIF}
     FirstDynamic(Instance);
   end;
 end;
@@ -529,9 +536,18 @@ begin
   CheckEquals(TMyClass.ClassName + '.FirstDynamic,'+TMyClass.ClassName + '.FirstDynamic,'+TMyClass.ClassName + '.FirstDynamic', State);
 end;
 
+procedure WaitForNewTickCount;
+var
+  StartTick: Cardinal;
+begin
+  StartTick := GetTickCount();
+  while StartTick = GetTickCount do
+    ;
+end;
+
 procedure TDmtTestCase.TMyDescendent_Create_FasterDynamicLoop_Outperforms_SlowDynamicLoop;
 const
-  CountPlus1 = 1000; // 10000; // 1000000;
+  CountPlus1 = 1000;
   procedure SlowDynamicLoop(Instance: TMyClass);
   var
     i: Integer;
@@ -543,11 +559,13 @@ const
   procedure FasterDynamicLoop(Instance: TMyClass);
   var
     i: Integer;
-    FirstDynamic: procedure of object;
+//    FirstDynamic: procedure of object;
+    FirstDynamic: procedure(Self: TObject);
   begin
-    FirstDynamic := Instance.FirstDynamic;
+//    FirstDynamic := Instance.FirstDynamic;
+    FirstDynamic := @TMyClass.FirstDynamic;
     for i := 0 to CountPlus1 do
-      FirstDynamic;
+      FirstDynamic(Instance);
   end;
 var
   FasterElapsedTicks: Cardinal;
@@ -556,16 +574,23 @@ var
   IntermediateTime: Cardinal;
   SlowElapsedTicks: Cardinal;
   StartTime: Cardinal;
+  SlowDoneTime: Cardinal;
   SubjectUnderTest: TSubject;
 begin
+  // Note: The performance test is not realistic - the first run part will be faster,
+  // because we are really measuring how AddState is performing - and it is growing badly (slowly) - HV
+  // I "cheated" by calling FasterDynamicLoop before SlowDynamicLoop
   SubjectUnderTest := BuildDescendent;
-  StartTime := GetTickCount();
   Instance := SubjectUnderTest.Instance;
-  SlowDynamicLoop(Instance);
+  WaitForNewTickCount;
   IntermediateTime := GetTickCount();
   FasterDynamicLoop(Instance);
   FinishTime := GetTickCount();
-  SlowElapsedTicks := IntermediateTime - StartTime;
+  WaitForNewTickCount;
+  StartTime := GetTickCount();
+  SlowDynamicLoop(Instance);
+  SlowDoneTime := GetTickCount();
+  SlowElapsedTicks := SlowDoneTime - StartTime;
   FasterElapsedTicks := FinishTime - IntermediateTime;
   CheckTrue(FasterElapsedTicks < SlowElapsedTicks);
 end;
