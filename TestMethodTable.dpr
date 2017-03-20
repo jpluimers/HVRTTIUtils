@@ -123,17 +123,6 @@ type
     Methods: PDmtMethods; // really [0..Count-1]
   end;
 
-function GetDmt(const AClass: TClass): PDmt;
-var
-  Vmt: PVmt;
-begin
-  Vmt := GetVmt(AClass);
-  if Assigned(Vmt) then
-    Result := Vmt.DynamicTable
-  else
-    Result := nil;
-end;
-
 procedure DumpPublishedMethods(const AClass: TClass);
 var
   CurrentClass: TClass;
@@ -173,47 +162,6 @@ begin
     end;
     CurrentClass := CurrentClass.ClassParent;
   end;
-end;
-
-function FindDynamicMethod(AClass: TClass; DMTIndex: TDMTIndex): Pointer;
-// Pascal variant of the faster BASM version in System.GetDynaMethod
-var
-  Dmt: PDmt;
-  DmtMethods: PDmtMethods;
-  i: Integer;
-begin
-  while Assigned(AClass) do
-  begin
-    Dmt := GetDmt(AClass);
-    if Assigned(Dmt) then
-      for i := 0 to Dmt.Count - 1 do
-        if DMTIndex = Dmt.Indicies[i] then
-        begin
-          DmtMethods := @Dmt.Indicies[Dmt.Count];
-          Result := DmtMethods[i];
-          Exit;
-        end;
-    // Not in this class, try the parent class
-    AClass := AClass.ClassParent;
-  end;
-  Result := nil;
-end;
-
-procedure DumpFoundDynamicMethods(AClass: TClass);
-  procedure Dump(DMTIndex: TDMTIndex);
-  var
-    Proc: Pointer;
-  begin
-    Proc := FindDynamicMethod(AClass, DMTIndex);
-    Writeln(Format('Dynamic Method Index = %2d, Method = %p', //
-      [DMTIndex, Proc]));
-  end;
-
-begin
-  Dump(-1);
-  Dump(1);
-  Dump(13);
-  Dump(42);
 end;
 
 type

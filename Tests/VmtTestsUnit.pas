@@ -485,4 +485,3 @@ end;
 initialization
   RegisterTest(TVmtTestCase.Suite);
 end.
-

@@ -36,7 +36,10 @@
     <DelphiCompile Include="HVRTTIUtilsTests.dpr">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
+    <DCCReference Include="..\HVDMT.pas" />
     <DCCReference Include="..\HVVMT.pas" />
+    <DCCReference Include="DmtTestsUnit.pas" />
+    <DCCReference Include="HVRTTIUtilsTestsUnit.pas" />
     <DCCReference Include="VmtTestsUnit.pas" />
   </ItemGroup>
 </Project>
