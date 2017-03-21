@@ -12,7 +12,8 @@ type
     DefField: TObject;
     property DefProp: TObject read DefField write DefField;
     procedure DefMethod;
-  published
+  published // Note: It is as expected to get a warning here in D2005 and later: [dcc32 Warning] MPlusTestsUnit.pas(15): W1055 PUBLISHED caused RTTI ($M+) to be added to type 'TMMinus'
+            // see http://hallvards.blogspot.no/2007/03/review-delphi-2007-for-win32-beta-part_06.html
     PubField: TObject;
     property PubProp: TObject read PubField write PubField;
     procedure PubMethod;
@@ -175,7 +176,11 @@ end;
 
 procedure TMPlusTests.TMMinus_PropInfo_PubProp_HasValue;
 begin
-  CheckNotEqualsPointer(nil, TypInfo.GetPropInfo(TMMinus, 'PubProp'));
+  // Note: Delphi 2007 and earlier do not generate ClassInfo (= TypeInfo) RTTI for $M- classes, even if they have published sections
+{$IF CompilerVersion <= 15}
+  if TMMinus.ClassInfo <> nil then
+{$ENDIF CompilerVersion <= 15}
+    CheckNotEqualsPointer(nil, TypInfo.GetPropInfo(TMMinus, 'PubProp'));
 end;
 
 procedure TMPlusTests.TMMinus_MethodAddress_PubMethod_HasValue;
