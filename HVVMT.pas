@@ -177,11 +177,15 @@ implementation
 
 uses
 {$IF CompilerVersion >= 25} // Delphi XE4 or newer
-  AnsiStrings, 
+  AnsiStrings,
 {$IFEND CompilerVersion >= 25}
   Classes,
   SysUtils;
 
+{$IF CompilerVersion < 20} // Older than Delphi 2009
+type
+  PByte = PAnsiChar;
+{$IFEND CompilerVersion < 20}
 // Virtual method table
 
 function GetVmt(const AClass: TClass): PVmt;
@@ -271,6 +275,13 @@ begin
     Inc(PByte(Result), Result.Size);
 end;
 
+function MatchingSymbolNames(const AName1, AName2: TSymbolName): boolean;
+begin
+  Result := (Length(AName1) = Length(AName2)) and //
+            ({$IF CompilerVersion >= 25}AnsiStrings.{$IFEND CompilerVersion >= 25} //
+             StrLIComp(PAnsiChar(@AName1[1]), PAnsiChar(@AName2[1]), Length(AName2)) = 0); //
+end;
+
 function FindPublishedMethodByName(const AClass: TClass; const AName: TSymbolName): PPublishedMethod;
 var
   CurrentClass: TClass;
@@ -282,10 +293,7 @@ begin
     Result := GetFirstPublishedMethod(CurrentClass);
     for i := 0 to GetPublishedMethodCount(CurrentClass) - 1 do
     begin
-      // Note: Length(ShortString) expands to efficient inline code
-      if (Length(Result.Name) = Length(AName)) and //
-         ({$IF CompilerVersion >= 25}AnsiStrings.{$IFEND CompilerVersion >= 25}StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) //
-      then
+      if MatchingSymbolNames(Result.Name, AName) then
         Exit;
       Result := GetNextPublishedMethod(CurrentClass, Result);
     end;
@@ -408,10 +416,7 @@ begin
     Result := GetFirstPublishedField(CurrentClass);
     for i := 0 to GetPublishedFieldCount(CurrentClass) - 1 do
     begin
-      // Note: Length(ShortString) expands to efficient inline code
-      if (Length(Result.Name) = Length(AName)) and //
-         ({$IF CompilerVersion >= 25}AnsiStrings.{$IFEND CompilerVersion >= 25}StrLIComp(PAnsiChar(@Result.Name[1]), PAnsiChar(@AName[1]), Length(AName)) = 0) //
-      then
+      if MatchingSymbolNames(Result.Name, AName) then
         Exit;
       Result := GetNextPublishedField(CurrentClass, Result);
     end;
@@ -445,7 +450,7 @@ begin
   asm
     int 3
   end;
-  Result := FindPublishedFieldByOffset(Instance.ClassType, PSymbolChar(AAddr) - PSymbolChar(Instance)); { TODO -o##jpl -cFix : Why note PByte ?? }
+  Result := FindPublishedFieldByOffset(Instance.ClassType, PByte(AAddr) - PByte(Instance));
 end;
 
 function FindPublishedFieldOffset(const AClass: TClass; const AName: TSymbolName): Integer;
@@ -468,7 +473,7 @@ begin
     int 3
   end;
   if Offset >= 0 then
-    Result := PObject(PSymbolChar(Instance) + Offset) { TODO -o##jpl -cFix : Why note PByte ?? }
+    Result := PObject(PByte(Instance) + Offset)
   else
     Result := nil;
 end;
@@ -509,7 +514,7 @@ end;
 function GetPublishedFieldAddr(const Instance: TObject; const Field: PPublishedField): PObject;
 begin
   if Assigned(Field) then
-    Result := PObject(PSymbolChar(Instance) + Field.Offset) { TODO -o##jpl -cFix : Why note PByte ?? }
+    Result := PObject(PByte(Instance) + Field.Offset)
   else
     Result := nil;
 end;
