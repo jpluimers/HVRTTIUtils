@@ -177,9 +177,11 @@ end;
 procedure TMPlusTests.TMMinus_PropInfo_PubProp_HasValue;
 begin
   // Note: Delphi 2007 and earlier do not generate ClassInfo (= TypeInfo) RTTI for $M- classes, even if they have published sections
-{$IF CompilerVersion <= 15}
-  if TMMinus.ClassInfo <> nil then
-{$ENDIF CompilerVersion <= 15}
+{$IF CompilerVersion <= 19} // Delphi 2007 or older
+  if TMMinus.ClassInfo = nil then
+    Check(True) // pass
+  else
+{$IFEND CompilerVersion <= 19} // Delphi 2007 or older
     CheckNotEqualsPointer(nil, TypInfo.GetPropInfo(TMMinus, 'PubProp'));
 end;
 
