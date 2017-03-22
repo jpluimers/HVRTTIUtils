@@ -8,7 +8,9 @@ uses
   VmtTestsUnit in 'VmtTestsUnit.pas',
   DmtTestsUnit in 'DmtTestsUnit.pas',
   MPlusTestsUnit in 'MPlusTestsUnit.pas',
-  MethodTableTestsUnit in 'MethodTableTestsUnit.pas';
+  PublishedMethodDumperUnit in 'PublishedMethodDumperUnit.pas',
+  MethodTableTestsUnit in 'MethodTableTestsUnit.pas',
+  PublishedMethodTableTestsUnit in 'PublishedMethodTableTestsUnit.pas';
 
 begin
   Main();

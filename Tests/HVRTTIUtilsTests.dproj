@@ -47,6 +47,8 @@
     <DCCReference Include="HVRTTIUtilsTestsUnit.pas" />
     <DCCReference Include="MethodTableTestsUnit.pas" />
     <DCCReference Include="MPlusTestsUnit.pas" />
+    <DCCReference Include="PublishedMethodDumperUnit.pas" />
+    <DCCReference Include="PublishedMethodTableTestsUnit.pas" />
     <DCCReference Include="VmtTestsUnit.pas" />
   </ItemGroup>
 </Project>
