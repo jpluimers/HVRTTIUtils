@@ -86,9 +86,7 @@ constructor TSubject.Create;
 var
   Instance: TObject;
 begin
-{$WARN CONSTRUCTING_ABSTRACT OFF} // Ignore [dcc32 Warning] VmtTestsUnit.pas(219): W1020 Constructing instance of 'TObject' containing abstract method 'TObject.MethodB'
   Instance := TObject.Create();
-{$WARN CONSTRUCTING_ABSTRACT ON}
   Create(Instance);
 end;
 

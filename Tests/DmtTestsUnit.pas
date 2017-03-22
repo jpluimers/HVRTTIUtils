@@ -79,7 +79,6 @@ type
     SkipAddState: Boolean;
     function Build: TSubject;
     function BuildDescendent: TSubject;
-  private
     function BuildSubjects: IStringsSubject;
     procedure CheckDynamicMethods(const DynamicMethods: TDynamicMethods; const AllowNilMethodAddr: Boolean = False);
   protected
@@ -118,7 +117,7 @@ uses
   AbstractTestHelperUnit;
 
 var
-  FVmtTestCase: TDmtTestCase = nil;
+  FDmtTestCase: TDmtTestCase = nil;
 
 { TMyClass }
 
@@ -253,8 +252,8 @@ end;
 
 class procedure TMyClass.AddState(const AClass: TClass; const AValue: string);
 begin
-  if Assigned(FVmtTestCase) then
-    FVmtTestCase.AddState(AClass.ClassName + '.' + AValue);
+  if Assigned(FDmtTestCase) then
+    FDmtTestCase.AddState(AClass.ClassName + '.' + AValue);
 end;
 
 procedure TMyClass.FirstDynamic;
@@ -316,7 +315,7 @@ constructor TSubject.Create;
 var
   Instance: TMyClass;
 begin
-{$WARN CONSTRUCTING_ABSTRACT OFF} // Ignore [dcc32 Warning] VmtTestsUnit.pas(219): W1020 Constructing instance of 'TMyClass' containing abstract method 'TMyClass.MethodB'
+{$WARN CONSTRUCTING_ABSTRACT OFF} // [dcc32 Warning] DmtTestsUnit.pas(319): W1020 Constructing instance of 'TMyClass' containing abstract method 'TMyClass.SecondDynamic'
   Instance := TMyClass.Create();
 {$WARN CONSTRUCTING_ABSTRACT ON}
   Create(Instance);
@@ -427,12 +426,12 @@ end;
 procedure TDmtTestCase.SetUp;
 begin
   inherited SetUp();
-  FVmtTestCase := Self;
+  FDmtTestCase := Self;
 end;
 
 procedure TDmtTestCase.TearDown;
 begin
-  FVmtTestCase := nil;
+  FDmtTestCase := nil;
   inherited TearDown();
 end;
 

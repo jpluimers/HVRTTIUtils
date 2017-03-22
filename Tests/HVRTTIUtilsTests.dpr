@@ -7,7 +7,8 @@ uses
   AbstractTestHelperUnit in 'AbstractTestHelperUnit.pas',
   VmtTestsUnit in 'VmtTestsUnit.pas',
   DmtTestsUnit in 'DmtTestsUnit.pas',
-  MPlusTestsUnit in 'MPlusTestsUnit.pas';
+  MPlusTestsUnit in 'MPlusTestsUnit.pas',
+  MethodTableTestsUnit in 'MethodTableTestsUnit.pas';
 
 begin
   Main();
