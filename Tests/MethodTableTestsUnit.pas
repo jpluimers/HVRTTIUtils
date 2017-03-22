@@ -54,37 +54,8 @@ type
   end;
 
 type
-  ISubject = interface
-    ['{10BC8F84-79F9-42D9-8933-04806B1147D8}']
-    function Instance: TMyClass;
-  end;
-
-  TSubject = class(TInterfacedObject, ISubject)
-  strict private
-    FInstance: TMyClass;
-  private
-    function Instance: TMyClass;
-  public
-    constructor Create; overload;
-    constructor Create(const AInstance: TMyClass); overload;
-    destructor Destroy; override;
-  end;
-
-type
   TMethodTableTestCase = class(TTestCase)
-  strict private
-    FSkipAddState: Boolean;
-    FState: string;
-    FStateStrings: TStrings;
-    SkipAddState: Boolean;
-    function Build: TSubject;
-  protected
-    procedure SetUp; override;
-    procedure TearDown; override;
   public
-    destructor Destroy; override;
-    procedure AddState(const Value: string); virtual;
-    property State: string read FState;
   published
     procedure TPropFixup_DumpPublishedMethods2_ValuesOk;
     procedure TMyDescendent_DumpPublishedMethods_Equals_DumpPublishedMethods2;
@@ -105,9 +76,6 @@ uses
   HVVMT,
   AbstractTestHelperUnit;
 
-var
-  FVmtTestCase: TMethodTableTestCase = nil;
-
 type
   PPublishedMethodArray = array of PPublishedMethod;
   TPublishedMethodDumper = class
@@ -117,7 +85,6 @@ type
     procedure Append(const Line: string);
     procedure AppendHeader(const CurrentClass: TClass);
     procedure AppendMethod(const MethodIndexInClass: Integer; const Method: PPublishedMethod);
-    procedure Clear;
     function GetOutput: string;
   public
     constructor Create;
@@ -206,61 +173,7 @@ begin
   Writeln(ClassName, '.FourthDynamic');
 end;
 
-{ TSubject }
-
-constructor TSubject.Create;
-var
-  Instance: TMyClass;
-begin
-{$WARN CONSTRUCTING_ABSTRACT OFF} // Ignore [dcc32 Warning] MethodTableTestsUnit.pas(205): W1020 Constructing instance of 'TMyClass' containing abstract method 'TMyClass.SecondDynamic'
-  Instance := TMyClass.Create();
-{$WARN CONSTRUCTING_ABSTRACT ON}
-  Create(Instance);
-end;
-
-constructor TSubject.Create(const AInstance: TMyClass);
-begin
-  inherited Create;
-  FInstance := AInstance;
-end;
-
-destructor TSubject.Destroy;
-begin
-  FInstance.Free();
-  FInstance := nil;
-  inherited Destroy();
-end;
-
-function TSubject.Instance: TMyClass;
-begin
-  Result := FInstance;
-end;
-
 { TMethodTableTestCase }
-
-destructor TMethodTableTestCase.Destroy;
-begin
-  FStateStrings.Free();
-  FStateStrings := nil;
-  inherited Destroy();
-end;
-
-procedure TMethodTableTestCase.AddState(const Value: string);
-begin
-  if FSkipAddState then
-    Exit;
-  if not Assigned(FStateStrings) then
-  begin
-    FStateStrings := TStringList.Create();
-  end;
-  FStateStrings.Add(Value);
-  FState := FStateStrings.CommaText;
-end;
-
-function TMethodTableTestCase.Build: TSubject;
-begin
-  Result := TSubject.Create();
-end;
 
 procedure TMethodTableTestCase.TPropFixup_DumpPublishedMethods2_ValuesOk;
 var
@@ -277,7 +190,7 @@ begin
   end;
   CheckEquals(1, Length(Actual));
   Method := Actual[0];
-  CheckEquals('MakeGlobalReference', Method.Name);
+  CheckEquals('MakeGlobalReference', string(Method.Name));
   CheckNotEqualsPointer(nil, Method.Address);
 end;
 
@@ -302,18 +215,6 @@ begin
     Dumper.Free();
   end;
   CheckEquals(Expected, Actual);
-end;
-
-procedure TMethodTableTestCase.SetUp;
-begin
-  inherited SetUp();
-  FVmtTestCase := Self;
-end;
-
-procedure TMethodTableTestCase.TearDown;
-begin
-  FVmtTestCase := nil;
-  inherited TearDown();
 end;
 
 procedure TMethodTableTestCase.TMyDescendent_FindPublishedMethodByAddr_FirstDynamic_HasValue;
@@ -414,11 +315,6 @@ begin
   NewIndex := Length(FMethods);
   SetLength(FMethods, NewIndex + 1);
   FMethods[NewIndex] := Method;
-end;
-
-procedure TPublishedMethodDumper.Clear;
-begin
-  FOutput.Clear();
 end;
 
 procedure TPublishedMethodDumper.DumpPublishedMethods(const AClass: TClass);

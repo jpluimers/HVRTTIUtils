@@ -76,7 +76,6 @@ type
     FSkipAddState: Boolean;
     FState: string;
     FStateStrings: TStrings;
-    SkipAddState: Boolean;
     function Build: TSubject;
     function BuildDescendent: TSubject;
     function BuildSubjects: IStringsSubject;
