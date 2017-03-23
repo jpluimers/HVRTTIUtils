@@ -5,7 +5,6 @@ interface
 uses
   Classes,
   TestFramework,
-  TypInfo,
   HVVMT;
 
 type
@@ -37,7 +36,6 @@ type
 implementation
 
 uses
-  SysUtils,
   AbstractTestHelperUnit,
   PublishedFieldDumperUnit;
 

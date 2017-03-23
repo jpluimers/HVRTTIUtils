@@ -23,8 +23,6 @@ type
 implementation
 
 uses
-  SysUtils,
-  TypInfo,
   HVVMT,
   AbstractTestHelperUnit,
   PublishedMethodDumperUnit;

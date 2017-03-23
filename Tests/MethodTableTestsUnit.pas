@@ -42,7 +42,7 @@ type
   end;
 
   TMyDescendent = class(TMyClass)
-    // public
+// public // because of {$M-}
     procedure FirstDynamic; override;
   published
     procedure SecondDynamic; override;
@@ -70,7 +70,6 @@ type
 implementation
 
 uses
-  SysUtils,
   TypInfo,
   HVVMT,
   AbstractTestHelperUnit,

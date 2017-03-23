@@ -23,8 +23,6 @@ type
 implementation
 
 uses
-  TypInfo,
-  HVVMT,
   HVPublishedMethodParams;
 
 type

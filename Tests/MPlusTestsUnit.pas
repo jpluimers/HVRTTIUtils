@@ -76,7 +76,6 @@ type
 implementation
 
 uses
-  SysUtils,
   TypInfo,
   AbstractTestHelperUnit;
 

@@ -15,7 +15,9 @@ uses
   HVMethodSignature in '..\HVMethodSignature.pas',
   PublishedMethodParametersTestsUnit in 'PublishedMethodParametersTestsUnit.pas',
   PublishedFieldDumperUnit in 'PublishedFieldDumperUnit.pas',
-  PublishedFieldTableTestsUnit in 'PublishedFieldTableTestsUnit.pas';
+  PublishedFieldTableTestsUnit in 'PublishedFieldTableTestsUnit.pas',
+  InterfaceDumperUnit in 'InterfaceDumperUnit.pas',
+  InterfaceTableTestsUnit in 'InterfaceTableTestsUnit.pas';
 
 begin
   Main();
