@@ -10,6 +10,7 @@ type
   TPublishedMethodTableTestCase = class(TTestCase)
   published
     procedure TMyClass_DumpPublishedMethods_Equals_DumpPublishedMethods2;
+    procedure TMyClass_FindPublishedMethodByAddr_FourthPublished_HasValue;
     procedure TMyClass_FindPublishedMethodByAddr_From_FindPublishedMethodByAddr_FifthPublished_HasValue;
     procedure TMyClass_FindPublishedMethodByAddr_nil_HasNoValue;
     procedure TMyClass_FindPublishedMethodByAddr_ThirdPublished_HasValue;
@@ -17,7 +18,6 @@ type
     procedure TMyClass_FindPublishedMethodByName_FirstPublished_HasValue;
     procedure TMyClass_FindPublishedMethodByName_NotThere_HasNoValue;
     procedure TMyClass_FindPublishedMethodByName_SixthPublished_HasValue;
-    procedure TMyClass_FindPublishedMethodByAddr_FourthPublished_HasValue;
   end;
 
 implementation
@@ -40,6 +40,8 @@ type
     procedure FifthPublished(Component: TComponent); stdcall;
     function SixthPublished(A: string; Two, Three, Four, Five, Six: Integer): string; pascal;
   end;
+
+{ TMyClass }
 
 procedure TMyClass.FirstPublished;
 begin
@@ -89,6 +91,16 @@ begin
     Dumper.Free();
   end;
   CheckEquals(Expected, Actual);
+end;
+
+procedure TPublishedMethodTableTestCase.TMyClass_FindPublishedMethodByAddr_FourthPublished_HasValue;
+var
+  Actual: PPublishedMethod;
+  Address: Pointer;
+begin
+  Address := FindPublishedMethodAddr(TMyClass, 'FourthPublished');
+  Actual := FindPublishedMethodByAddr(TMyClass, Address);
+  CheckNotEqualsPointer(nil, Actual);
 end;
 
 procedure TPublishedMethodTableTestCase.TMyClass_FindPublishedMethodByAddr_From_FindPublishedMethodByAddr_FifthPublished_HasValue;
@@ -148,16 +160,6 @@ var
   Actual: PPublishedMethod;
 begin
   Actual := FindPublishedMethodByName(TMyClass, 'SixthPublished');
-  CheckNotEqualsPointer(nil, Actual);
-end;
-
-procedure TPublishedMethodTableTestCase.TMyClass_FindPublishedMethodByAddr_FourthPublished_HasValue;
-var
-  Actual: PPublishedMethod;
-  Address: Pointer;
-begin
-  Address := FindPublishedMethodAddr(TMyClass, 'FourthPublished');
-  Actual := FindPublishedMethodByAddr(TMyClass, Address);
   CheckNotEqualsPointer(nil, Actual);
 end;
 

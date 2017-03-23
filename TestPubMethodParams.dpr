@@ -6,8 +6,6 @@ uses
   Classes,
   SysUtils,
   TypInfo,
-  Controls,
-  StdCtrls,
   HVVMT in 'HVVMT.pas',
   HVPublishedMethodParams in 'HVPublishedMethodParams.pas';
 

@@ -6,11 +6,7 @@ uses
   Classes,
   SysUtils,
   TypInfo,
-  Controls,
-  StdCtrls,
   ObjAuto,
-  Windows,
-  SoapHTTPPasInv,
 {$IF CompilerVersion < 26} // Older than Delphi XE5
   WebSnapObjs,
 {$IFEND CompilerVersion < 26} // Older than Delphi XE5

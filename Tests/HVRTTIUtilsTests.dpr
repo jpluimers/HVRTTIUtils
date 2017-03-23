@@ -10,7 +10,12 @@ uses
   MPlusTestsUnit in 'MPlusTestsUnit.pas',
   PublishedMethodDumperUnit in 'PublishedMethodDumperUnit.pas',
   MethodTableTestsUnit in 'MethodTableTestsUnit.pas',
-  PublishedMethodTableTestsUnit in 'PublishedMethodTableTestsUnit.pas';
+  PublishedMethodTableTestsUnit in 'PublishedMethodTableTestsUnit.pas',
+  HVPublishedMethodParams in '..\HVPublishedMethodParams.pas',
+  HVMethodSignature in '..\HVMethodSignature.pas',
+  PublishedMethodParametersTestsUnit in 'PublishedMethodParametersTestsUnit.pas',
+  PublishedFieldDumperUnit in 'PublishedFieldDumperUnit.pas',
+  PublishedFieldTableTestsUnit in 'PublishedFieldTableTestsUnit.pas';
 
 begin
   Main();
