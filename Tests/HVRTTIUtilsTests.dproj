@@ -41,13 +41,17 @@
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
     <DCCReference Include="..\HVDMT.pas" />
+    <DCCReference Include="..\HVInterfaceMethods.pas" />
     <DCCReference Include="..\HVMethodSignature.pas" />
     <DCCReference Include="..\HVPublishedMethodParams.pas" />
     <DCCReference Include="..\HVVMT.pas" />
     <DCCReference Include="AbstractTestHelperUnit.pas" />
     <DCCReference Include="DmtTestsUnit.pas" />
+    <DCCReference Include="ExtendedInterfaceMethodsTestsUnit.pas" />
     <DCCReference Include="HVRTTIUtilsTestsUnit.pas" />
     <DCCReference Include="InterfaceDumperUnit.pas" />
+    <DCCReference Include="InterfaceMethodsDumperUnit.pas" />
+    <DCCReference Include="InterfaceMethodsTestsUnit.pas" />
     <DCCReference Include="InterfaceTableTestsUnit.pas" />
     <DCCReference Include="MethodTableTestsUnit.pas" />
     <DCCReference Include="MPlusTestsUnit.pas" />

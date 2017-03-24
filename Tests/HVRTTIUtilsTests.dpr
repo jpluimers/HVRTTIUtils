@@ -17,7 +17,11 @@ uses
   PublishedFieldDumperUnit in 'PublishedFieldDumperUnit.pas',
   PublishedFieldTableTestsUnit in 'PublishedFieldTableTestsUnit.pas',
   InterfaceDumperUnit in 'InterfaceDumperUnit.pas',
-  InterfaceTableTestsUnit in 'InterfaceTableTestsUnit.pas';
+  InterfaceTableTestsUnit in 'InterfaceTableTestsUnit.pas',
+  HVInterfaceMethods in '..\HVInterfaceMethods.pas',
+  InterfaceMethodsDumperUnit in 'InterfaceMethodsDumperUnit.pas',
+  InterfaceMethodsTestsUnit in 'InterfaceMethodsTestsUnit.pas',
+  ExtendedInterfaceMethodsTestsUnit in 'ExtendedInterfaceMethodsTestsUnit.pas';
 
 begin
   Main();
