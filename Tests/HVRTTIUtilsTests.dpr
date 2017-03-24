@@ -22,7 +22,8 @@ uses
   InterfaceMethodsDumperUnit in 'InterfaceMethodsDumperUnit.pas',
   InterfaceMethodsTestsUnit in 'InterfaceMethodsTestsUnit.pas',
   ExtendedInterfaceMethodsTestsUnit in 'ExtendedInterfaceMethodsTestsUnit.pas',
-  InterfaceVariantsTestsUnit in 'InterfaceVariantsTestsUnit.pas';
+  InterfaceVariantsTestsUnit in 'InterfaceVariantsTestsUnit.pas',
+  PolymorphicPublishedMethodsTestsUnit in 'PolymorphicPublishedMethodsTestsUnit.pas';
 
 begin
   Main();
