@@ -65,6 +65,9 @@ type
 type
   {.$M+}{.$TYPEINFO ON}
 {$METHODINFO ON} // Wrt interface RTTI, this has the same effect as $M and $TYPEINFO
+{$IF CompilerVersion >= 21} // Delphi 2010 or newer require TYPEINFO IN to generate RTTI for interfaces2010 and up
+{$TYPEINFO ON}
+{$IFEND CompilerVersion >= 21} // Delphi 2010 or newer require TYPEINFO IN to generate RTTI for interfaces2010 and up
   IMyMPInterface = interface
     ['{AA503475-0187-4108-8E27-41475F4EF818}']
     procedure Foo(A: Integer; var B: string); register;

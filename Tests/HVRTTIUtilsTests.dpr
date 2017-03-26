@@ -23,7 +23,9 @@ uses
   InterfaceMethodsTestsUnit in 'InterfaceMethodsTestsUnit.pas',
   ExtendedInterfaceMethodsTestsUnit in 'ExtendedInterfaceMethodsTestsUnit.pas',
   InterfaceVariantsTestsUnit in 'InterfaceVariantsTestsUnit.pas',
-  PolymorphicPublishedMethodsTestsUnit in 'PolymorphicPublishedMethodsTestsUnit.pas';
+  PolymorphicPublishedMethodsTestsUnit in 'PolymorphicPublishedMethodsTestsUnit.pas',
+  HVMethodInfoClasses in '..\HVMethodInfoClasses.pas',
+  HVMethodInfoClassesTestsUnit in 'HVMethodInfoClassesTestsUnit.pas';
 
 begin
   Main();

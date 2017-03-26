@@ -5,6 +5,9 @@ unit HVVMT;
 interface
 
 uses
+{$IF CompilerVersion <= 20} // Delphi 2009 and older
+  IntfInfo,
+{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
   TypInfo;
 
 type
@@ -28,6 +31,11 @@ type
   TSymbolName = TypInfo.TSymbolNameBase;
 {$IFEND CompilerVersion <= 23}  // Delphi XE3 or older
   PSymbolName = ^TSymbolName;
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+  TCallConv = TypInfo.TCallConv;
+{$ELSE}
+  TCallConv = IntfInfo.TCallConv;
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
   PObject = ^TObject;
   PClass = ^TClass;
 
@@ -72,6 +80,69 @@ type
     Address: Pointer;
     Name: { packed } TSymbolName; // same type as System.TypInfo.TVmtMethodEntry.Name: TSymbolName;
   end;
+
+const // MandatoryTPublishedMethodTailVersion seems to follow MandatoryTReturnInfoVersion
+{$IF CompilerVersion >= 21} // Delphi 2010 or newer
+  MandatoryTPublishedMethodTailVersion = 3;
+{$ELSE}
+{$IF CompilerVersion = 20} // Delphi 2009
+  MandatoryTPublishedMethodTailVersion = 2;
+{$ELSE} // Delphi 2007 or older
+  MandatoryTPublishedMethodTailVersion = 1;
+{$IFEND CompilerVersion = 20} // Delphi 2009
+{$IFEND CompilerVersion >= 21} // Delphi 2010 or newer
+
+type
+  // Depending on the Delphi version, TPublishedMethod is followed by TPublishedMethodTail
+  PPublishedMethodTail = ^TPublishedMethodTail;
+
+  //1 The first part looks very similar to System.ObjAuto.TReturnInfo: could it be the same?
+  TPublishedMethodTail = packed record
+    Version: Byte; // =3
+    CallingConvention: TCallConv;
+    ResultType: PPTypeInfo; // nil for procedures
+    ParameterOffset: Word; // total size of data needed for stack parameters + 8 (ret-addr + pushed EBP)
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+    ParameterCount: Byte;
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+   {Parameters: array[1..ParameterCount] of TVmtMethodParam;
+    AttrData: TAttrData;}
+  end;
+
+  PPublishedMethodParameter = ^TPublishedMethodParameter;
+
+  // Depending on the Delphi version, TPublishedMethodTail is followed by TPublishedMethodParameters
+  TPublishedMethodParameter = packed record
+    Flags: Byte;
+    ParameterType: PPTypeInfo;
+    ParameterOffset: Word; // TYpInfo wrongly indicates type Byte; // Parameter location: 0..2 for reg, >=8 for stack
+    Name: { packed } TSymbolName; // same type as System.TypInfo.TVmtMethodParam.Name: TSymbolName;
+//    Padding: Byte;
+  end;
+
+  TPublishedMethodParameters = array of TPublishedMethodParameter;
+
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+  PAttribute = ^TAttribute;
+
+  TAttribute = packed record
+    AttributeType: PPTypeInfo;
+    AttributeConstructor: Pointer;
+    ArgumentsLength: Word;
+    ArgumentsData: array[1..High(Word) {ArgumentsLength - 2}] of Byte;
+  end;
+
+  TAttributes = array of TAttribute;
+
+  // Depending on the Delphi version, TPublishedMethodParameters and TPublishedMethodParameter are followed by TAttributeData
+
+  PAttributeData = ^TAttributeData;
+
+  TAttributeData = packed record
+    Length: Word; // byte length of the structure
+    Attributes: TAttributes;
+  end;
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
 
   TPublishedMethods = packed array [0 .. High(Word) - 1] of TPublishedMethod;
   PPmt = ^TPmt;
@@ -251,6 +322,11 @@ begin
   Result := GetPublishedMethod(AClass, 0);
 end;
 
+function SkipBytes(const CurrentField: Pointer; const FieldSize: Integer): Pointer;
+begin
+  Result := PByte(CurrentField) + FieldSize;
+end;
+
 { .$DEFINE DEBUG }
 { .$UNDEF DEBUG }
 function GetNextPublishedMethod(const AClass: TClass; const PublishedMethod: PPublishedMethod): PPublishedMethod;
@@ -259,14 +335,118 @@ function GetNextPublishedMethod(const AClass: TClass; const PublishedMethod: PPu
 {$IFDEF DEBUG}
 var
   ExpectedSize: Integer;
+  HeadSize: Integer;
+  ParameterIndex: Integer;
+  PublishedMethodParameter: PPublishedMethodParameter;
+  PublishedMethodParameterSize: Integer;
+  PublishedMethodParametersSize: Integer;
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+  PublishedMethodParameterAttributeData: PAttributeData;
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+{$IF CompilerVersion <= 20} // Delphi 2009 and older
+  RunningHeadSize: Integer;
+{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
+  TailHeaderSize: Integer;
+  TailSize: Integer;
+  Tail: PPublishedMethodTail;
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+  TailParameterCount: Integer;
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
 {$ENDIF}
 begin
   Result := PublishedMethod;
 {$IFDEF DEBUG}
-  ExpectedSize := SizeOf(Result.Size) //
+  HeadSize := SizeOf(Result.Size) //
     + SizeOf(Result.Address) //
     + SizeOf(Result.Name[0]) //
     + Length(Result.Name);
+
+  if Result.Size = HeadSize then
+  begin
+    TailSize := 0;
+  end
+  else
+  begin
+    // Depending on the Delphi version, Result + HeadSize now points to the tail of
+    // PublishedMethod^ or to the next PPublishedMethod entry.
+
+    // Determine if there is a Tail, and what the TailSize is
+    Tail := SkipBytes(PublishedMethod, HeadSize);
+    if Tail.Version = MandatoryTPublishedMethodTailVersion then
+    begin
+      TailHeaderSize := SizeOf(Tail^);
+      PublishedMethodParametersSize := 0;
+
+      PublishedMethodParameter := SkipBytes(Tail, TailHeaderSize);
+
+      // The below code is complicated because of the various Delphi version changes.
+      // - Delphi 2010 and newer maintain a Tail.ParameterCount which results the IF structure coming down to
+      //   1. an if when there are no parameters (I'm not sure this can even happen)
+      //   2. a for loop involving TailParameterCount counting the size of all parameters (and attributes)
+      // - Delphi 2009 and older lack the Tail.ParameterCount so we have a while loop
+      //   that counts the bytes used by the parameters and stops as soon as we match or exceed the expected Result.Size
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+      TailParameterCount := Tail.ParameterCount;
+      if TailParameterCount = 0 then
+      begin
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+        // skip attributes for the method
+        PublishedMethodParameterAttributeData := SkipBytes(Tail, TailHeaderSize);
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+      end
+      else
+{$ELSE}
+      RunningHeadSize := HeadSize + TailHeaderSize;
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+      begin
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+        for ParameterIndex := 1 to TailParameterCount do
+{$ELSE}
+        while RunningHeadSize < Result.Size do
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+        begin
+          PublishedMethodParameterSize :=
+            SizeOf(PublishedMethodParameter.Flags) +
+            SizeOf(PublishedMethodParameter.ParameterType) +
+            SizeOf(PublishedMethodParameter.ParameterOffset) +
+            SizeOf(PublishedMethodParameter.Name[0]) +
+            Length(PublishedMethodParameter.Name);
+          // skip attributes for the parameter
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+          PublishedMethodParameterAttributeData := SkipBytes(PublishedMethodParameter, PublishedMethodParameterSize);
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+          PublishedMethodParametersSize :=
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+            PublishedMethodParameterAttributeData.Length +
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+            PublishedMethodParametersSize + PublishedMethodParameterSize;
+          PublishedMethodParameter := SkipBytes(PublishedMethodParameter,
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+            PublishedMethodParameterAttributeData.Length +
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+            PublishedMethodParameterSize);
+{$IF CompilerVersion <= 20} // Delphi 2009 and older
+            Inc(RunningHeadSize, PublishedMethodParameterSize);
+{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
+        end;
+      end;
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+      // skip attributes for the method
+      PublishedMethodParameterAttributeData := SkipBytes(PublishedMethodParameterAttributeData, PublishedMethodParameterAttributeData.Length);
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+      TailSize := TailHeaderSize +
+{$IF CompilerVersion >= 21} // Delphi 2010 and newer
+        PublishedMethodParameterAttributeData.Length +
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+        PublishedMethodParametersSize;
+    end
+    else
+    begin
+      TailSize := 0;
+    end;
+  end;
+
+  ExpectedSize := HeadSize + TailSize;
   if Result.Size <> ExpectedSize then
     raise Exception.CreateFmt( //
       'RTTI for the published method "%s" of class "%s" has %d extra bytes of unknown data!', //

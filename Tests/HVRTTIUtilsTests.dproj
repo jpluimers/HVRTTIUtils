@@ -6,7 +6,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-    <DCC_DependencyCheckOutputName>%Platform%\%Config%\HVRTTIUtilsTests.exe</DCC_DependencyCheckOutputName>
+    <DCC_DependencyCheckOutputName>HVRTTIUtilsTests.exe</DCC_DependencyCheckOutputName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Version>7.0</Version>
@@ -17,7 +17,6 @@
     <DCC_DcuOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_DcuOutput>
     <DCC_ObjOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_ObjOutput>
     <DCC_HppOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_HppOutput>
-    <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Version>7.0</Version>
@@ -29,7 +28,6 @@
     <DCC_ResourcePath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(BDS)\RaveReports\Lib</DCC_ResourcePath>
     <DCC_ObjPath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(BDS)\RaveReports\Lib</DCC_ObjPath>
     <DCC_IncludePath>$(BDS)\lib\Debug;$(BDS)\Lib\Debug\Indy10;$(BDS)\RaveReports\Lib</DCC_IncludePath>
-    <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
   </PropertyGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality</Borland.Personality>
@@ -44,12 +42,14 @@
     </DelphiCompile>
     <DCCReference Include="..\HVDMT.pas" />
     <DCCReference Include="..\HVInterfaceMethods.pas" />
+    <DCCReference Include="..\HVMethodInfoClasses.pas" />
     <DCCReference Include="..\HVMethodSignature.pas" />
     <DCCReference Include="..\HVPublishedMethodParams.pas" />
     <DCCReference Include="..\HVVMT.pas" />
     <DCCReference Include="AbstractTestHelperUnit.pas" />
     <DCCReference Include="DmtTestsUnit.pas" />
     <DCCReference Include="ExtendedInterfaceMethodsTestsUnit.pas" />
+    <DCCReference Include="HVMethodInfoClassesTestsUnit.pas" />
     <DCCReference Include="HVRTTIUtilsTestsUnit.pas" />
     <DCCReference Include="InterfaceDumperUnit.pas" />
     <DCCReference Include="InterfaceMethodsDumperUnit.pas" />

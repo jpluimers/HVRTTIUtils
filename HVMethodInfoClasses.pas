@@ -31,15 +31,15 @@ uses
   ObjAuto;
 
 const
-{$IF CompilerVersion >= 22} // Delphi XE or newer
+{$IF CompilerVersion >= 21} // Delphi 2010 or newer
   MandatoryTReturnInfoVersion = 3;
 {$ELSE}
-{$IF CompilerVersion = 21} // Delphi 2010
-  MandatoryTReturnInfoVersion = 2;
-{$ELSE} // Delphi 2009 or older
+{$IF CompilerVersion = 20} // Delphi 2009
+  MandatoryTReturnInfoVersion = 2; // even though Delphi 2010 ObjAuto.pas says "TReturnInfo.Version Must be 2", the Delphi 2010 compiler returns 3
+{$ELSE} // Delphi 2007 or older
   MandatoryTReturnInfoVersion = 1;
-{$IFEND CompilerVersion = 21} // Delphi 2010
-{$IFEND CompilerVersion >= 22} // Delphi XE or newer
+{$IFEND CompilerVersion = 20} // Delphi 2009
+{$IFEND CompilerVersion >= 21} // Delphi 2010 or newer
 
 function ClassOfTypeInfo(const P: PPTypeInfo): TClass;
 begin
@@ -113,11 +113,11 @@ begin
       end
       else
         MethodInfo.MethodKind := mkProcedure;
-{$IF CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
+{$IF CompilerVersion <= 25} // Delphi XE4 and older have TCallingConvention as a separate type, but ordinally compatible
       MethodInfo.CallConv := TCallConv(ReturnRTTI.CallingConvention);
 {$ELSE}
       MethodInfo.CallConv := ReturnRTTI.CallingConvention;
-{$IFEND CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
+{$IFEND CompilerVersion <= 25} // Delphi XE4 and older have TCallingConvention as a separate type, but ordinally compatible
       MethodInfo.HasSignatureRTTI := True;
       // Count parameters
 

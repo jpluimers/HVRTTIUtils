@@ -5,19 +5,11 @@ interface
 uses
   Classes,
   SysUtils,
-{$IF CompilerVersion <= 20} // Delphi 2009 and older
-  IntfInfo,
-{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
   TypInfo,
   HVVMT;
 
 type
   TParamLocation = (plUnknown = -1, plEAX = 0, plEDX = 1, plECX = 2, plStack1 = 3, plStackN = $FFFF);
-{$IF CompilerVersion >= 21} // Delphi 2010 and newer
-  TCallConv = TypInfo.TCallConv;
-{$ELSE}
-  TCallConv = IntfInfo.TCallConv;
-{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
 {$IF not Declared(TParamFlag)}
   TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
   TParamFlags = set of TParamFlag;
@@ -68,6 +60,11 @@ function MethodSignatureToString(const Name: TSymbolName; const MethodSignature:
 function MethodSignatureToString(const MethodSignature: TMethodSignature): string; overload;
 
 implementation
+
+{$IF CompilerVersion <= 20} // Delphi 2009 and older
+uses
+  IntfInfo;
+{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
 
 function Skip(const Value: PSymbolName): Pointer;
 begin
