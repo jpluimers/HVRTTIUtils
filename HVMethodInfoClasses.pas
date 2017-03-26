@@ -27,7 +27,7 @@ implementation
 uses
 {$IF CompilerVersion <= 20} // Delphi 2009 and older
   IntfInfo,
-{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
   ObjAuto;
 
 const
@@ -38,8 +38,8 @@ const
   MandatoryTReturnInfoVersion = 2;
 {$ELSE} // Delphi 2009 or older
   MandatoryTReturnInfoVersion = 1;
-{$IFEND CompilerVersion >= 21}
-{$IFEND CompilerVersion >= 22}
+{$IFEND CompilerVersion = 21} // Delphi 2010
+{$IFEND CompilerVersion >= 22} // Delphi XE or newer
 
 function ClassOfTypeInfo(const P: PPTypeInfo): TClass;
 begin
@@ -54,7 +54,7 @@ begin
 {$IF CompilerVersion >= 21} // Delphi 2010 and newer have `attributes`
   // Skip attribute data
   Inc(PByte(Result), PWord(Result)^);
-{$IFEND CompilerVersion >= 21}
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer have `attributes`
 end;
 
 procedure GetClassInfo(const ClassTypeInfo: PTypeInfo; var ClassInfo: TClassInfo);
@@ -117,7 +117,7 @@ begin
       MethodInfo.CallConv := TCallConv(ReturnRTTI.CallingConvention);
 {$ELSE}
       MethodInfo.CallConv := ReturnRTTI.CallingConvention;
-{$IFEND CompilerVersion <= 22}
+{$IFEND CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
       MethodInfo.HasSignatureRTTI := True;
       // Count parameters
 
@@ -131,7 +131,7 @@ begin
         Inc(MethodInfo.ParamCount); // Assume less than 255 parameters ;)!
         ParameterRTTI := NextParameter(ParameterRTTI);
       end;
-{$IFEND CompilerVersion >= 21}
+{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer have ReturnRTTI.ParamCount; use it:
       // Read parameter info
       ParameterRTTI := Pointer(Cardinal(ReturnRTTI) + SizeOf(ReturnRTTI^));
       SetLength(MethodInfo.Parameters, MethodInfo.ParamCount);
@@ -142,7 +142,7 @@ begin
         MethodParam.Flags := TypInfo.TParamFlags(ParameterRTTI.Flags);
 {$ELSE}
         MethodParam.Flags := ParameterRTTI.Flags;
-{$IFEND CompilerVersion <= 22}
+{$IFEND CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
         if pfResult in ParameterRTTI.Flags then
           MethodParam.ParamName := 'Result'
         else

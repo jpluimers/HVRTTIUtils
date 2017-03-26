@@ -7,7 +7,7 @@ uses
   SysUtils,
 {$IF CompilerVersion <= 20} // Delphi 2009 and older
   IntfInfo,
-{$IFEND CompilerVersion >= 21} // Delphi 2010 and newer
+{$IFEND CompilerVersion <= 20} // Delphi 2009 and older
   TypInfo,
   HVVMT;
 

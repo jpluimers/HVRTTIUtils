@@ -6,7 +6,7 @@ uses
   TypInfo,
 {$IF CompilerVersion <= 23}  // Delphi XE3 or older
   HVVMT,
-{$IFEND CompilerVersion <= 23}
+{$IFEND CompilerVersion <= 23}  // Delphi XE3 or older
   HVMethodSignature;
 
 type

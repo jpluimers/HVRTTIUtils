@@ -26,7 +26,7 @@ type
 {$ELSE}
   TSymbolNameBase = TypInfo.TSymbolNameBase;
   TSymbolName = TypInfo.TSymbolNameBase;
-{$IFEND CompilerVersion <= 23}
+{$IFEND CompilerVersion <= 23}  // Delphi XE3 or older
   PSymbolName = ^TSymbolName;
   PObject = ^TObject;
   PClass = ^TClass;
@@ -40,7 +40,7 @@ type
   PEquals = function (Self: TObject; Obj: TObject): Boolean;
   PGetHashCode = function (Self: TObject): Integer;
   PToString = function (Self: TObject): string;
-{$IFEND CompilerVersion >= 20}
+{$IFEND CompilerVersion >= 20} // Delphi 2009 or newer
   PSafeCallException = function(Self: TObject; ExceptObject: TObject; ExceptAddr: Pointer): HResult;
   PAfterConstruction = procedure(Self: TObject);
   PBeforeDestruction = procedure(Self: TObject);
@@ -129,7 +129,7 @@ type
     Equals: PEquals;
     GetHashCode: PGetHashCode;
     ToString: PToString;
-{$IFEND CompilerVersion >= 20}
+{$IFEND CompilerVersion >= 20} // Delphi 2009 or newer
     SafeCallException: PSafeCallException;
     AfterConstruction: PAfterConstruction;
     BeforeDestruction: PBeforeDestruction;
@@ -178,14 +178,15 @@ implementation
 uses
 {$IF CompilerVersion >= 25} // Delphi XE4 or newer
   AnsiStrings,
-{$IFEND CompilerVersion >= 25}
+{$IFEND CompilerVersion >= 25} // Delphi XE4 or newer
   Classes,
   SysUtils;
 
 {$IF CompilerVersion < 20} // Older than Delphi 2009
 type
   PByte = PAnsiChar;
-{$IFEND CompilerVersion < 20}
+{$IFEND CompilerVersion < 20} // Older than Delphi 2009
+
 // Virtual method table
 
 function GetVmt(const AClass: TClass): PVmt;

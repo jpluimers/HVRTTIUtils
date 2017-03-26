@@ -5,7 +5,7 @@ program TestMethodTable;
 uses
 {$IF CompilerVersion >= 25} // Delphi XE4 or newer
   AnsiStrings,
-{$IFEND CompilerVersion >= 25}
+{$IFEND CompilerVersion >= 25} // Delphi XE4 or newer
   Classes,
   SysUtils,
   TypInfo,
