@@ -1,11 +1,12 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ProjectGuid>{fe1dd8de-854c-4736-a77e-d454e6993a36}</ProjectGuid>
     <MainSource>TestVmt.dpr</MainSource>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-    <DCC_DependencyCheckOutputName>TestVmt.exe</DCC_DependencyCheckOutputName>
+    <DCC_DependencyCheckOutputName>%Platform%\%Config%\TestVmt.exe</DCC_DependencyCheckOutputName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Version>7.0</Version>
@@ -13,10 +14,21 @@
     <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
     <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
     <DCC_Define>RELEASE</DCC_Define>
+    <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
+    <DCC_DcuOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_DcuOutput>
+    <DCC_ObjOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_ObjOutput>
+    <DCC_HppOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_HppOutput>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <Version>7.0</Version>
     <DCC_Define>DEBUG</DCC_Define>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
+    <DCC_DcuOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_DcuOutput>
+    <DCC_ObjOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_ObjOutput>
+    <DCC_HppOutput>.\$(Platform)\$(Config)\$(SanitizedProjectName)</DCC_HppOutput>
   </PropertyGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality</Borland.Personality>
