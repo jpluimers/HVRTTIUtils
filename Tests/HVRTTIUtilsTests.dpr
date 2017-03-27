@@ -21,9 +21,7 @@ uses
   HVInterfaceMethods in '..\HVInterfaceMethods.pas',
   InterfaceMethodsDumperUnit in 'InterfaceMethodsDumperUnit.pas',
   InterfaceMethodsTestsUnit in 'InterfaceMethodsTestsUnit.pas',
-  ExtendedInterfaceMethodsTestsUnit in 'ExtendedInterfaceMethodsTestsUnit.pas',
-  InterfaceVariantsTestsUnit in 'InterfaceVariantsTestsUnit.pas',
-  PolymorphicPublishedMethodsTestsUnit in 'PolymorphicPublishedMethodsTestsUnit.pas';
+  ExtendedInterfaceMethodsTestsUnit in 'ExtendedInterfaceMethodsTestsUnit.pas';
 
 begin
   Main();

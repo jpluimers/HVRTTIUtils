@@ -53,7 +53,6 @@
     <DCCReference Include="InterfaceMethodsDumperUnit.pas" />
     <DCCReference Include="InterfaceMethodsTestsUnit.pas" />
     <DCCReference Include="InterfaceTableTestsUnit.pas" />
-    <DCCReference Include="InterfaceVariantsTestsUnit.pas" />
     <DCCReference Include="MethodTableTestsUnit.pas" />
     <DCCReference Include="MPlusTestsUnit.pas" />
     <DCCReference Include="PolymorphicPublishedMethodsTestsUnit.pas" />
