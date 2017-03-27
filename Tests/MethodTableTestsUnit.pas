@@ -204,7 +204,11 @@ var
   Actual: PPublishedMethod;
 begin
   Actual := FindPublishedMethodByAddr(TMyDescendent, @TMyDescendent.FirstDynamic);
-  CheckNotEqualsPointer(nil, Actual);
+{$IF CompilerVersion <= 19} // Delphi 2007 or older
+  CheckEqualsPointer(nil, Actual); // Delphi 2007 and older do not generate RTTI for the default section
+{$ELSE}
+  CheckNotEqualsPointer(nil, Actual); // Delphi 2010 (likely also 2009) and newer do generate RTTI for the default section
+{$IFEND CompilerVersion <= 19} // Delphi 2007 or older
 end;
 
 procedure TMethodTableTestCase.TMyDescendent_FindPublishedMethodByAddr_From_FindPublishedMethodByAddr_ThirdPublished_HasValue;
