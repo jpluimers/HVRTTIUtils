@@ -6,6 +6,10 @@ uses
   SysUtils,
   TypInfo,
   HVVMT in 'HVVMT.pas',
+{.$DEFINE TESTING}
+{$IFDEF TESTING}
+  Soap.IntfInfo,
+{$ENDIf}
   HVInterfaceMethods in 'HVInterfaceMethods.pas',
   HVMethodSignature in 'HVMethodSignature.pas';
 
@@ -13,7 +17,18 @@ procedure DumpInterface(InterfaceTypeInfo: PTypeInfo);
 var
   InterfaceInfo: TInterfaceInfo;
   i: Integer;
+{$IFDEF TESTING}
+  InterfaceMetaData: TIntfMetaData;
+{$ENDIf}
 begin
+{$IFDEF TESTING}
+  try
+    Soap.IntfInfo.GetIntfMetaData(InterfaceTypeInfo, InterfaceMetaData, fmoRTTIBaseMethods); // Compare with RTL version
+  except
+    on E: EInterfaceRTTIException do
+      Writeln(E.Message);
+  end;
+{$ENDIf}
   GetInterfaceInfo(InterfaceTypeInfo, InterfaceInfo);
 
   Writeln('unit ', InterfaceInfo.UnitName, ';');
@@ -78,7 +93,7 @@ type
   TEnum = (enOne, enTwo, enThree);
 
 type
-  {.$M+}{.$TYPEINFO ON}
+{$TYPEINFO ON} // Todo -o##jpl : compare to ExtendedInterfaceMethodsTestsUnit - Note: Needs to be on in XE6, probably before as well
 {$METHODINFO ON} // Wrt interface RTTI, this has the same effect as $M and $TYPEINFO
   IMyMPInterface = interface
     ['{AA503475-0187-4108-8E27-41475F4EF818}']

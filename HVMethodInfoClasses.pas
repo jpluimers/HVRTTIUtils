@@ -50,7 +50,7 @@ end;
 
 function NextParameter(const Param: PParamInfo): PParamInfo;
 begin
-  Result := Skip(@Param.Name);
+  Result := AfterNameField(@Param.Name);
 {$IF CompilerVersion >= 21} // Delphi 2010 and newer have `attributes`
   // Skip attribute data
   Inc(PByte(Result), PWord(Result)^);
@@ -94,7 +94,7 @@ begin
     MethodInfo.MethodKind := mkProcedure; // Assume procedure by default
 
     // Return info and calling convention
-    ReturnRTTI := Skip(@PublishedMethod.Name);
+    ReturnRTTI := AfterNameField(@PublishedMethod.Name);
     Assert(ReturnRTTI.Version = MandatoryTReturnInfoVersion);
     SignatureEnd := Pointer(Cardinal(PublishedMethod) //
       + PublishedMethod.Size);

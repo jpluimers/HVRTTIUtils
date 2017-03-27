@@ -255,7 +255,7 @@ uses
 
 {$IF CompilerVersion < 20} // Older than Delphi 2009
 type
-  PByte = PAnsiChar;
+  PByte = PAnsiChar; // Redeclare PByte to the only type that supported byte sized pointer arithmetics in D2007 and earlier
 {$IFEND CompilerVersion < 20} // Older than Delphi 2009
 
 // Virtual method table

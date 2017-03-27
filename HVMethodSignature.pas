@@ -17,9 +17,10 @@ type
   PMethodParam = ^TMethodParam;
 
   TMethodParam = record
+    // Structures in our units are to make the RTTI easier to use, so use string type and convert data from TSymbolName in the original structures
     Flags: TParamFlags;
-    ParamName: TSymbolName; // same type as System.TypInfo.TTypeData.ParamList[].ParamName: ShortString; so use TSymbolName
-    TypeName: TSymbolName; // same type as System.TypInfo.TTypeInfo.Name: TSymbolName;
+    ParamName: string; // same content as System.TypInfo.TTypeData.ParamList[].ParamName: ShortString; so use TSymbolName
+    TypeName: string; // same content as System.TypInfo.TTypeInfo.Name: TSymbolName;
     TypeInfo: PTypeInfo;
     Location: TParamLocation;
   end;
@@ -28,14 +29,15 @@ type
   PMethodSignature = ^TMethodSignature;
 
   TMethodSignature = record
-    Name: TSymbolName; // same type as TPublishedMethod.Name: TSymbolName
+    // Structures in our units are to make the RTTI easier to use, so use string type and convert data from TSymbolName in the original structures
+    Name: string; // same content as TPublishedMethod.Name: TSymbolName
     MethodKind: TMethodKind;
     CallConv: TCallConv;
     HasSignatureRTTI: Boolean;
     Address: Pointer;
     ParamCount: Byte;
     Parameters: TMethodParamList;
-    ResultTypeName: TSymbolName; // same type as System.TypInfo.TTypeInfo.Name: TSymbolName;
+    ResultTypeName: string; // same content as System.TypInfo.TTypeInfo.Name: TSymbolName;
     ResultTypeInfo: PTypeInfo;
   end;
   TMethodSignatureList = array of TMethodSignature;
@@ -43,9 +45,11 @@ type
   PPackedShortString = ^TPackedShortString;
   TPackedShortString = string[1];
 
-function Skip(const Value: PSymbolName): Pointer; overload;
-function Skip(const Value: PPackedShortString; var NextField { : Pointer } ): PSymbolName; overload; experimental; // TODO -o##jpl : change to type PSymbolName ??
-function Skip(const CurrField: Pointer; const FieldSize: Integer): Pointer; overload; experimental;
+function SizeOfNameField(const Value: PSymbolName): Integer;
+function GetNameField(const Value: PSymbolName): string; overload;
+function AfterNameField(const Value: PSymbolName): Pointer;
+
+function SkipBytes(const CurrField: Pointer; const FieldSize: Integer): Pointer; overload; experimental;
 
 function Dereference(const P: PPTypeInfo): PTypeInfo;
 
@@ -55,7 +59,7 @@ function MethodParamString(const MethodParam: TMethodParam; const ExcoticFlags: 
 
 function MethodParametesString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
 
-function MethodSignatureToString(const Name: TSymbolName; const MethodSignature: TMethodSignature): string; overload;
+function MethodSignatureToString(const Name: string; const MethodSignature: TMethodSignature): string; overload;
 
 function MethodSignatureToString(const MethodSignature: TMethodSignature): string; overload;
 
@@ -66,26 +70,37 @@ uses
   IntfInfo;
 {$IFEND CompilerVersion <= 20} // Delphi 2009 and older
 
-function Skip(const Value: PSymbolName): Pointer;
+function GetNameField(const Value: PSymbolName): string;
+{$IFDEF UNICODE}
+var
+  Dest: array[0..511] of Char;
+{$ENDIF}
+begin
+{$IFDEF UNICODE}
+  SetString(Result, Dest, UTF8ToUnicode(Dest, Length(Dest), PAnsiChar(@Value^[1]), Length(Value^))-1);
+{$ELSE}
+  Result := string(Value^);
+{$ENDIF}
+end;
+
+function SizeOfNameField(const Value: PSymbolName): Integer;
+begin
+  Result := SizeOf(Value^[0]) + Length(Value^);
+end;
+
+function AfterNameField(const Value: PSymbolName): Pointer;
 begin
   Result := Value;
-  Inc(PSymbolChar(Result), SizeOf(Value^[0]) + Length(Value^));
+  Inc(PSymbolChar(Result), SizeOfNameField(Value));
 end;
 
-function Skip(const Value: PPackedShortString; var NextField): PSymbolName;
+function SkipBytes(const CurrField: Pointer; const FieldSize: Integer): Pointer;
 begin
+{$IFDEF UNICODE}
   asm
     int 3
   end;
-  Result := PSymbolName(Value); // TODO: -o##jpl  change to Value type PSymbolName ?? 
-  Inc(PSymbolChar(NextField), SizeOf(Char) + Length(Result^) - SizeOf(TPackedShortString)); // TODO -o##jpl : is SizeOf(Char) correct?
-end;
-
-function Skip(const CurrField: Pointer; const FieldSize: Integer): Pointer;
-begin
-  asm
-    int 3
-  end;
+{$ENDIF UNICODE}
   Result := PSymbolChar(Currfield) + FieldSize;
 end;
 
@@ -196,7 +211,7 @@ begin
   end;
 end;
 
-function MethodSignatureToString(const Name: TSymbolName; const MethodSignature: TMethodSignature): string;
+function MethodSignatureToString(const Name: string; const MethodSignature: TMethodSignature): string;
 begin
   Result := Format('%s %s(%s)', //
     [MethodKindString(MethodSignature.MethodKind), //
