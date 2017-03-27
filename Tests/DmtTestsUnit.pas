@@ -1,7 +1,5 @@
 unit DmtTestsUnit;
 
-// From TestDmt
-
 interface
 
 uses

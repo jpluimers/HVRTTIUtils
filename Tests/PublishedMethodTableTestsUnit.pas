@@ -1,7 +1,5 @@
 unit PublishedMethodTableTestsUnit;
 
-// From TestPubMethodTable
-
 interface
 
 uses

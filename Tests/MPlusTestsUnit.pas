@@ -1,12 +1,34 @@
 unit MPlusTestsUnit;
 
-// from TestMPlus
-
 interface
 
 uses
   Classes,
   TestFramework;
+
+type
+{$M-} // disable RTTI generation for default sections
+  TMMinus = class
+    DefField: TObject;
+    property DefProp: TObject read DefField write DefField;
+    procedure DefMethod;
+  published // Note: It is as expected to get a warning here in D2005 and later: [dcc32 Warning] MPlusTestsUnit.pas(15): W1055 PUBLISHED caused RTTI ($M+) to be added to type 'TMMinus'
+            // see http://hallvards.blogspot.no/2007/03/review-delphi-2007-for-win32-beta-part_06.html
+    PubField: TObject;
+    property PubProp: TObject read PubField write PubField;
+    procedure PubMethod;
+  end;
+
+{$M+} // enable RTTI generation for default sections
+  TMPlus = class
+    DefField: TObject;
+    property DefProp: TObject read DefField write DefField;
+    procedure DefMethod;
+  published
+    PubField: TObject;
+    property PubProp: TObject read PubField write PubField;
+    procedure PubMethod;
+  end;
 
 type
   ISubject = interface
@@ -56,50 +78,6 @@ implementation
 uses
   TypInfo,
   AbstractTestHelperUnit;
-
-type
-{$M-} // disable RTTI generation for default sections
-  TMMinus = class
-    DefField: TObject;
-    property DefProp: TObject read DefField write DefField;
-    procedure DefMethod;
-  published // Note: It is as expected to get a warning here in D2005 and later: [dcc32 Warning] MPlusTestsUnit.pas(15): W1055 PUBLISHED caused RTTI ($M+) to be added to type 'TMMinus'
-            // see http://hallvards.blogspot.no/2007/03/review-delphi-2007-for-win32-beta-part_06.html
-    PubField: TObject;
-    property PubProp: TObject read PubField write PubField;
-    procedure PubMethod;
-  end;
-
-{$M+} // enable RTTI generation for default sections
-  TMPlus = class
-    DefField: TObject;
-    property DefProp: TObject read DefField write DefField;
-    procedure DefMethod;
-  published
-    PubField: TObject;
-    property PubProp: TObject read PubField write PubField;
-    procedure PubMethod;
-  end;
-
-{ TMMinus }
-
-procedure TMMinus.DefMethod;
-begin
-end;
-
-procedure TMMinus.PubMethod;
-begin
-end;
-
-{ TMPlus }
-
-procedure TMPlus.DefMethod;
-begin
-end;
-
-procedure TMPlus.PubMethod;
-begin
-end;
 
 { TSubject }
 
@@ -227,6 +205,26 @@ end;
 procedure TMPlusTests.TMPlus_ClassName_HasValue;
 begin
   CheckNotEquals('', TMPlus.ClassName);
+end;
+
+{ TMMinus }
+
+procedure TMMinus.DefMethod;
+begin
+end;
+
+procedure TMMinus.PubMethod;
+begin
+end;
+
+{ TMPlus }
+
+procedure TMPlus.DefMethod;
+begin
+end;
+
+procedure TMPlus.PubMethod;
+begin
 end;
 
 initialization
