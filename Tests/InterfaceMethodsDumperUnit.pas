@@ -5,7 +5,6 @@ interface
 uses
   Classes,
   TypInfo,
-  HVVMT,
   HVMethodSignature,
   HVInterfaceMethods;
 
@@ -18,8 +17,6 @@ type
     FTMethodSignatureList: TMethodSignatureList;
     procedure Append(const Line: string);
     procedure AppendHeader(const InterfaceTypeInfo: PTypeInfo; const InterfaceInfo: TInterfaceInfo);
-    procedure AppendInterfaceEntry(const IndexInClass: Integer; const InterfaceEntry: PInterfaceEntry);
-    procedure AppendMethodSignature(const IndexInClass: Integer; const MethodSignature: TMethodSignature);
     function GetOutput: string;
   public
     constructor Create;
@@ -80,28 +77,6 @@ begin
   Append(Line);
   if ifHasGuid in InterfaceFlags then
     Append(Format('    [''%s'']', [GuidToString(InterfaceInfo.Guid)]));
-end;
-
-procedure TInterfaceMethodsDumper.AppendInterfaceEntry(const IndexInClass: Integer; const InterfaceEntry: PInterfaceEntry);
-var
-  NewIndex: Integer;
-begin
-  Append(Format('%d. GUID = %s', [IndexInClass, GUIDToString(InterfaceEntry.IID)]));
-
-  NewIndex := Length(FInterfaceEntries);
-  SetLength(FInterfaceEntries, NewIndex + 1);
-  FInterfaceEntries[NewIndex] := InterfaceEntry;
-end;
-
-procedure TInterfaceMethodsDumper.AppendMethodSignature(const IndexInClass: Integer; const MethodSignature: TMethodSignature);
-var
-  NewIndex: Integer;
-begin
-//  Append(Format('%d. GUID = %s', [IndexInClass, GUIDToString(MethodSignature.IID)]));
-
-  NewIndex := Length(FTMethodSignatureList);
-  SetLength(FTMethodSignatureList, NewIndex + 1);
-  FTMethodSignatureList[NewIndex] := MethodSignature;
 end;
 
 procedure TInterfaceMethodsDumper.DumpInterface(const InterfaceTypeInfo: PTypeInfo);

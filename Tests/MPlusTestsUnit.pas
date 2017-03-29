@@ -63,8 +63,10 @@ type
     DefField: TObject;
     property DefProp: TObject read DefField write DefField;
     procedure DefMethod;
+{$WARN TYPEINFO_IMPLICITLY_ADDED OFF} // disable [dcc32 Warning] W1055 PUBLISHED caused RTTI ($M+) to be added to type 'TMMinus'
   published // Note: It is as expected to get a warning here in D2005 and later: [dcc32 Warning] MPlusTestsUnit.pas(15): W1055 PUBLISHED caused RTTI ($M+) to be added to type 'TMMinus'
             // see http://hallvards.blogspot.no/2007/03/review-delphi-2007-for-win32-beta-part_06.html
+{$WARN TYPEINFO_IMPLICITLY_ADDED ON}
     PubField: TObject;
     property PubProp: TObject read PubField write PubField;
     procedure PubMethod;

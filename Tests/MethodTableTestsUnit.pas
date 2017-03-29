@@ -15,7 +15,9 @@ type
   TPropFixup = class
   public
     FInstance: Integer;
+{$WARN TYPEINFO_IMPLICITLY_ADDED OFF} // disable [dcc32 Warning] W1055 PUBLISHED caused RTTI ($M+) to be added to type 'TPropFixup'
   published
+{$WARN TYPEINFO_IMPLICITLY_ADDED ON}
     function MakeGlobalReference: Boolean;
   end;
 
@@ -29,7 +31,9 @@ type
     procedure MessageMethod(var Msg); message 42;
   private
     FA: Integer;
+{$WARN TYPEINFO_IMPLICITLY_ADDED OFF} // disable [dcc32 Warning] W1055 PUBLISHED caused RTTI ($M+) to be added to type 'TMyClass'
   published // These *always* have RTTI, even in $M-! Bug?
+{$WARN TYPEINFO_IMPLICITLY_ADDED ON}
     constructor Create; // "Bug": ignores published constructor and destructors
     destructor Destroy; override;
     procedure MsgHandler(var Msg); message 1;

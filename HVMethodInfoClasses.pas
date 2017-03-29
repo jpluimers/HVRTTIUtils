@@ -28,7 +28,8 @@ uses
 {$IF CompilerVersion <= 20} // Delphi 2009 and older
   IntfInfo,
 {$IFEND CompilerVersion <= 20} // Delphi 2009 and older
-  ObjAuto;
+  ObjAuto,
+  SysUtils;
 
 const
 {$IF CompilerVersion >= 21} // Delphi 2010 or newer
@@ -95,7 +96,7 @@ begin
 
     // Return info and calling convention
     ReturnRTTI := AfterNameField(@PublishedMethod.Name);
-    Assert(ReturnRTTI.Version = MandatoryTReturnInfoVersion);
+    Assert(ReturnRTTI.Version = MandatoryTReturnInfoVersion, Format('ReturnRTTI.Version %d does not match expected version %d', [ReturnRTTI.Version, MandatoryTReturnInfoVersion]));
     SignatureEnd := Pointer(Cardinal(PublishedMethod) //
       + PublishedMethod.Size);
     if Cardinal(ReturnRTTI) >= Cardinal(SignatureEnd) then

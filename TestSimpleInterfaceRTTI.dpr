@@ -82,7 +82,7 @@ begin
   DumpSimpleInterface(TypeInfo(IMyDispInterface));
   Readln;
 
-  (* Expected output:
+(* Expected output:
 
 unit TestSimpleInterfaceRTTI;
 type
@@ -105,5 +105,5 @@ type
     ['{8574E276-4671-49AC-B775-B299E6EF01C5}']
     procedure UnknownName1;
   end;
-  *)
+*)
 end.

@@ -49,7 +49,7 @@ function SizeOfNameField(const Value: PSymbolName): Integer;
 function GetNameField(const Value: PSymbolName): string; overload;
 function AfterNameField(const Value: PSymbolName): Pointer;
 
-function SkipBytes(const CurrField: Pointer; const FieldSize: Integer): Pointer; overload; experimental;
+function SkipBytes(const CurrField: Pointer; const FieldSize: Integer): Pointer; overload;
 
 function Dereference(const P: PPTypeInfo): PTypeInfo;
 
