@@ -6,7 +6,8 @@ interface
 
 uses
   Classes,
-  TestFramework;
+  TestFramework, 
+  StatePerTestCaseUnit;
 
 type
   TMyClass = class
@@ -73,11 +74,9 @@ type
   TDynamicMethods = array of TDynamicMethod;
 
 type
-  TDmtTestCase = class(TTestCase)
+  TDmtTestCase = class(TStatePerTestCase)
   strict private
     FSkipAddState: Boolean;
-    FState: string;
-    FStateStrings: TStrings;
     function Build: TSubject;
     function BuildDescendent: TSubject;
     function BuildSubjects: IStringsSubject;
@@ -86,9 +85,7 @@ type
     procedure SetUp; override;
     procedure TearDown; override;
   public
-    destructor Destroy; override;
-    procedure AddState(const Value: string); virtual;
-    property State: string read FState;
+    procedure AddState(const Value: string); override;
   published
     procedure TMyClass_Create_FirstDynamic_State_Matches;
     procedure TMyClass_MyDynamicMethodIndex_Matches;
@@ -370,23 +367,11 @@ end;
 
 { TDmtTestCase }
 
-destructor TDmtTestCase.Destroy;
-begin
-  FStateStrings.Free();
-  FStateStrings := nil;
-  inherited Destroy();
-end;
-
 procedure TDmtTestCase.AddState(const Value: string);
 begin
   if FSkipAddState then
     Exit;
-  if not Assigned(FStateStrings) then
-  begin
-    FStateStrings := TStringList.Create();
-  end;
-  FStateStrings.Add(Value);
-  FState := FStateStrings.CommaText;
+  inherited AddState(Value);
 end;
 
 function TDmtTestCase.Build: TSubject;

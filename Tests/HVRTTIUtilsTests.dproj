@@ -64,6 +64,7 @@
     <DCCReference Include="PublishedMethodDumperUnit.pas" />
     <DCCReference Include="PublishedMethodParametersTestsUnit.pas" />
     <DCCReference Include="PublishedMethodTableTestsUnit.pas" />
+    <DCCReference Include="StatePerTestCaseUnit.pas" />
     <DCCReference Include="VmtTestsUnit.pas" />
   </ItemGroup>
 </Project>

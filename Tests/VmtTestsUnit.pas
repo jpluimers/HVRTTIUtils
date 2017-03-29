@@ -6,7 +6,8 @@ interface
 
 uses
   Classes,
-  TestFramework;
+  TestFramework, 
+  StatePerTestCaseUnit;
 
 type
   TMyClass = class
@@ -51,18 +52,12 @@ type
   end;
 
 type
-  TVmtTestCase = class(TTestCase)
+  TVmtTestCase = class(TStatePerTestCase)
   strict private
-    FState: string;
-    FStateStrings: TStrings;
     function Build: TSubject;
   protected
     procedure SetUp; override;
     procedure TearDown; override;
-  public
-    destructor Destroy; override;
-    procedure AddState(const Value: string); virtual;
-    property State: string read FState;
   published
     procedure TMyClass_Create_AfterConstruction_State_Matches;
     procedure TMyClass_Create_BeforeDestruction_State_Matches;
@@ -241,23 +236,6 @@ end;
 function TSubject.Instance: TMyClass;
 begin
   Result := FInstance;
-end;
-
-destructor TVmtTestCase.Destroy;
-begin
-  FStateStrings.Free();
-  FStateStrings := nil;
-  inherited Destroy();
-end;
-
-procedure TVmtTestCase.AddState(const Value: string);
-begin
-  if not Assigned(FStateStrings) then
-  begin
-    FStateStrings := TStringList.Create();
-  end;
-  FStateStrings.Add(Value);
-  FState := FStateStrings.CommaText;
 end;
 
 { TVmtTestCase }
