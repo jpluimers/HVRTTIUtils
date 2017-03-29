@@ -169,7 +169,6 @@ end;
 procedure TExtendedInterfaceMethodsTestCase.IMyMPInterface_DumpInterface_Output_Matches;
 begin
   Check_DumpInterface_Output_Matches(TypeInfo(IMyMPInterface), //
-// Non-Unicode Delphi correctly generates this:
        '"unit ExtendedInterfaceMethodsTestsUnit;",type,"  IMyMPInterface = dispinterface","    [''{AA503475-0187-4108-8E27-41475F4EF818}'']",' + //
        '"    procedure Foo(A: Integer; var B: string);",' + //
        '"    procedure Bar(LongParaName: TObject; const B: string; var C: Integer; out D: Byte); stdcall;",' + //
@@ -195,12 +194,6 @@ begin
        '"    function OkReturn11(): PWideChar;",' + //
        '"    procedure Test3(out R: Integer); safecall;",' + //
        '"  end;",'
-// Unicode Delphi wrongly generates this:
-//    '"unit ExtendedInterfaceMethodsTestsUnit;",type,"  IMyMPInterface = dispinterface","    [''{AA503475-0187-4108-8E27-41475F4EF818}'']",' +
-//    '"    procedure UnknownName1;","    procedure UnknownName2;","    procedure UnknownName3;","    procedure UnknownName4;","    procedure UnknownName5;",' +
-//    '"    procedure UnknownName6;","    procedure UnknownName7;","    procedure UnknownName8;","    procedure UnknownName9;","    procedure UnknownName10;",' +
-//    '"    procedure UnknownName11;","    procedure UnknownName12;","    procedure UnknownName13;","    procedure UnknownName14;","    procedure UnknownName15;",' +
-//    '"    procedure UnknownName16;","    procedure UnknownName17;","    procedure UnknownName18;","    procedure UnknownName19;","    procedure UnknownName20;","    procedure UnknownName21;","    procedure UnknownName22;","  end;",'
   );
 end;
 
