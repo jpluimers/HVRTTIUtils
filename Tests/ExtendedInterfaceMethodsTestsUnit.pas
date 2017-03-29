@@ -112,8 +112,9 @@ type
     function OkReturn6: TEnum;
     function OkReturn7: TClass;
     function OkReturn8: Pointer;
-    function OkReturn9: PChar;
+    function OkReturn9: PAnsiChar;
     function OkReturn10: TIntegerArray;
+    function OkReturn11: PWideChar;
 
     // Safecall calling convention is not supported
     // D7: [Fatal Error] Internal error: D6238
@@ -191,6 +192,7 @@ begin
        '"    function OkReturn8(): Pointer;",' + //
        '"    function OkReturn9(): PAnsiChar;",' + //
        '"    function OkReturn10(): TIntegerArray;",' + //
+       '"    function OkReturn11(): PWideChar;",' + //
        '"    procedure Test3(out R: Integer); safecall;",' + //
        '"  end;",'
 // Unicode Delphi wrongly generates this:

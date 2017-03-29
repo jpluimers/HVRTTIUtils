@@ -87,6 +87,9 @@ implementation
 
 uses
   SysUtils,
+{$IFDEF Unicode}
+  TypInfo,
+{$ENDIF Unicode}
   HVVMT;
 
 var
@@ -310,11 +313,7 @@ var
 begin
   SubjectUnderTest := Build;
   Vmt := GetVmt(SubjectUnderTest.Instance);
-  SymbolName :=
-{$IFDEF Unicode}
-    UTF8ToString
-{$ENDIF Unicode}
-    (Vmt^.ClassName^);
+  SymbolName := SymbolNameToString(Vmt^.ClassName^);
   CheckEquals(TMyClass.ClassName, SymbolName);
 end;
 

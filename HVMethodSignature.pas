@@ -77,9 +77,9 @@ var
 {$ENDIF}
 begin
 {$IFDEF UNICODE}
-  SetString(Result, Dest, UTF8ToUnicode(Dest, Length(Dest), PAnsiChar(@Value^[1]), Length(Value^))-1);
+  SetString(Result, Dest, UTF8ToUnicode(Dest, Length(Dest), PSymbolChar(@Value^[1]), Length(Value^))-1);
 {$ELSE}
-  Result := string(Value^);
+  Result := SymbolNameToString(Value^);
 {$ENDIF}
 end;
 
@@ -96,11 +96,6 @@ end;
 
 function SkipBytes(const CurrField: Pointer; const FieldSize: Integer): Pointer;
 begin
-{$IFDEF UNICODE}
-  asm
-    int 3
-  end;
-{$ENDIF UNICODE}
   Result := PSymbolChar(Currfield) + FieldSize;
 end;
 
@@ -154,10 +149,10 @@ begin
 {$IFEND Declared(pfResult)}
   end;
 
-  Result := Result + string(MethodParam.ParamName) + ': ';
+  Result := Result + MethodParam.ParamName + ': ';
   if pfArray in MethodParam.Flags then
     Result := Result + 'array of ';
-  Result := Result + string(MethodParam.TypeName);
+  Result := Result + MethodParam.TypeName;
 end;
 
 function MethodParametesString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
@@ -218,7 +213,7 @@ begin
     Name, //
     MethodParametesString(MethodSignature)]);
   if MethodSignature.HasSignatureRTTI and (MethodSignature.MethodKind = mkFunction) then
-    Result := Result + ': ' + string(MethodSignature.ResultTypeName);
+    Result := Result + ': ' + MethodSignature.ResultTypeName;
   Result := Result + ';';
   if MethodSignature.CallConv <> ccReg then
     Result := Result + ' ' + CallingConventionToString(MethodSignature.CallConv) + ';';

@@ -89,7 +89,7 @@ begin
   begin
     // Method
     MethodInfo := @ClassInfo.Methods[i];
-    MethodInfo.Name := PublishedMethod.Name;
+    MethodInfo.Name := SymbolNameToString(PublishedMethod.Name);
     MethodInfo.Address := PublishedMethod.Address;
     MethodInfo.MethodKind := mkProcedure; // Assume procedure by default
 
@@ -109,7 +109,7 @@ begin
       if Assigned(MethodInfo.ResultTypeInfo) then
       begin
         MethodInfo.MethodKind := mkFunction;
-        MethodInfo.ResultTypeName := MethodInfo.ResultTypeInfo.Name;
+        MethodInfo.ResultTypeName := SymbolNameToString(MethodInfo.ResultTypeInfo.Name);
       end
       else
         MethodInfo.MethodKind := mkProcedure;
@@ -146,10 +146,10 @@ begin
         if pfResult in ParameterRTTI.Flags then
           MethodParam.ParamName := 'Result'
         else
-          MethodParam.ParamName := ParameterRTTI.Name;
+          MethodParam.ParamName := SymbolNameToString(ParameterRTTI.Name);
         MethodParam.TypeInfo := Dereference(PPTypeInfo(ParameterRTTI.ParamType));
         if Assigned(MethodParam.TypeInfo) then
-          MethodParam.TypeName := MethodParam.TypeInfo.Name;
+          MethodParam.TypeName := SymbolNameToString(MethodParam.TypeInfo.Name);
         MethodParam.Location := TParamLocation(ParameterRTTI.Access);
         ParameterRTTI := NextParameter(ParameterRTTI);
       end;

@@ -103,13 +103,13 @@ begin
   begin
     MethodParam := @Result.Parameters[i];
     MethodParam.Flags := ParamListRecord.Flags;
-    MethodParam.ParamName := PackedShortString(@ParamListRecord.ParamName, ParamListRecord)^;
-    MethodParam.TypeName := PackedShortString(ParamListRecord)^;
+    MethodParam.ParamName := SymbolNameToString(PackedShortString(@ParamListRecord.ParamName, ParamListRecord)^);
+    MethodParam.TypeName := SymbolNameToString(PackedShortString(ParamListRecord)^);
   end;
   if MethodKind = mkProcedure then
     Result.ResultTypeName := ''
   else
-    Result.ResultTypeName := PackedShortString(ParamListRecord)^;
+    Result.ResultTypeName := SymbolNameToString(PackedShortString(ParamListRecord)^);
 end;
 
 function FindEventProperty(const Instance: TObject; const Code: Pointer): PPropInfo;
@@ -180,7 +180,7 @@ var
   MethodSignature: TMethodSignature;
 begin
   if FindPublishedMethodSignature(Instance, Method.Address, MethodSignature) then
-    Result := MethodSignatureToString(Method.Name, MethodSignature)
+    Result := MethodSignatureToString(SymbolNameToString(Method.Name), MethodSignature)
   else
     Result := Format('procedure %s(???);', [Method.Name]);
 end;
