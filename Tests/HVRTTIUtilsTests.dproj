@@ -49,7 +49,6 @@
     <DCCReference Include="AbstractTestHelperUnit.pas" />
     <DCCReference Include="DmtTestsUnit.pas" />
     <DCCReference Include="ExtendedInterfaceMethodsTestsUnit.pas" />
-    <DCCReference Include="HVMethodInfoClassesTestsUnit.pas" />
     <DCCReference Include="HVRTTIUtilsTestsUnit.pas" />
     <DCCReference Include="InterfaceDumperUnit.pas" />
     <DCCReference Include="InterfaceMethodsDumperUnit.pas" />

@@ -63,11 +63,12 @@ type
     ParamCount: Byte; // including Self
     Parameters: packed array [0 .. High(Byte) - 1] of TInterfaceParameterRTTI;
     ResultRTTI: TInterfaceResultRTTI; // only if Kind: TMethodKind has value mkFunction
-{$IF CompilerVersion >= 21} // Delphi 2010 or later has attributes
+    // CompilerVersion 21 (Delphi 2010) has attributes, but no AttributeSize field
+{$IF CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
     // Per-method attribute RTTI - skipped for now
     AttributeSize: Word;
 //    AttribData: array[0..AttribSize] of Byte;
-{$IFEND CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IFEND CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
   end;
 
   PExtraInterfaceData = ^TExtraInterfaceData;
@@ -103,11 +104,11 @@ end;
 procedure GetInterfaceInfo(const InterfaceTypeInfo: PTypeInfo; var InterfaceInfo: TInterfaceInfo);
 // Converts from raw RTTI structures to user-friendly Info structures
 const
-{$IF CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IF CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
   SizeOfAttribField = SizeOf(word);
 {$ELSE}
   SizeOfAttribField = 0;
-{$IFEND CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IFEND CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
 var
   TypeData: PTypeData;
   ExtraData: PExtraInterfaceData;
@@ -159,16 +160,16 @@ begin
     for j := Low(MethodInfo.Parameters) to High(MethodInfo.Parameters) do
     begin
       ParameterInfo := @MethodInfo.Parameters[j];
-      ParameterInfo.Flags := ParameterRTTI.Flags;
+      ParameterInfo.Flags := TParameterFlags(ParameterRTTI.Flags);
       ParameterInfo.ParamName := GetNameField(@ParameterRTTI.ParamName, ParameterRTTI);
       ParameterInfo.TypeName := GetNameField(@ParameterRTTI.TypeName, ParameterRTTI);
       ParameterInfo.TypeInfo := Dereference(ParameterRTTI.TypeInfo);
       ParameterInfo.Location := plUnknown;
-{$IF CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IF CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
       ParameterRTTI := SkipBytes(@ParameterRTTI.AttributeSize, ParameterRTTI.AttributeSize);
 {$ELSE}
       ParameterRTTI := SkipBytes(@ParameterRTTI.TypeInfo, SizeOf(ParameterRTTI.TypeInfo));
-{$IFEND CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IFEND CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
     end;
 
     // Function result
@@ -179,20 +180,20 @@ begin
       MethodInfo.ResultTypeName := GetNameField(@InterfaceResultRTTI.Name, InterfaceResultRTTI);
       MethodInfo.ResultTypeInfo := Dereference(InterfaceResultRTTI.TypeInfo);
       MethodRTTI := SkipBytes(@InterfaceResultRTTI.TypeInfo, SizeOf(InterfaceResultRTTI.TypeInfo) - SizeOf(MethodRTTI^) + SizeOfAttribField);
-{$IF CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IF CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
       AttributeAdjust := -2;
-{$IFEND CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IFEND CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
     end
     else
     begin
       MethodRTTI := SkipBytes(ParameterRTTI, - SizeOf(MethodRTTI^));
     end;
 
-{$IF CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IF CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
     AttributeSize := MethodRTTI.AttributeSize;
 {$ELSE}
     AttributeSize := 0;
-{$IFEND CompilerVersion >= 21} // Delphi 2010 or later has attributes
+{$IFEND CompilerVersion >= 22} // Delphi XE or later have attributes with an AttributeSize field
     MethodRTTI := SkipBytes(MethodRTTI, SizeOf(MethodRTTI^) + AttributeSize + AttributeAdjust);
   end;
 end;

@@ -10,11 +10,9 @@
     <Projects Include="TestInterfaceVariants.dproj" />
     <Projects Include="TestIntfTable.dproj" />
     <Projects Include="TestMethodTable.dproj" />
-    <Projects Include="TestMorePubMethodParams.dproj" />
     <Projects Include="TestMPlus.dproj" />
     <Projects Include="TestPolyPub.dproj" />
     <Projects Include="TestPubFieldTable.dproj" />
-    <Projects Include="TestPublishedMethodParams.dproj" />
     <Projects Include="TestPubMethodParams.dproj" />
     <Projects Include="TestPubMethodTable.dproj" />
     <Projects Include="TestSimpleInterfaceRTTI.dproj" />
@@ -144,24 +142,6 @@
   <Target Name="TestExtendedInterfaceRTTI:Make">
     <MSBuild Projects="TestExtendedInterfaceRTTI.dproj" Targets="Make" />
   </Target>
-  <Target Name="TestPublishedMethodParams">
-    <MSBuild Projects="TestPublishedMethodParams.dproj" Targets="" />
-  </Target>
-  <Target Name="TestPublishedMethodParams:Clean">
-    <MSBuild Projects="TestPublishedMethodParams.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="TestPublishedMethodParams:Make">
-    <MSBuild Projects="TestPublishedMethodParams.dproj" Targets="Make" />
-  </Target>
-  <Target Name="TestMorePubMethodParams">
-    <MSBuild Projects="TestMorePubMethodParams.dproj" Targets="" />
-  </Target>
-  <Target Name="TestMorePubMethodParams:Clean">
-    <MSBuild Projects="TestMorePubMethodParams.dproj" Targets="Clean" />
-  </Target>
-  <Target Name="TestMorePubMethodParams:Make">
-    <MSBuild Projects="TestMorePubMethodParams.dproj" Targets="Make" />
-  </Target>
   <Target Name="HVRTTIUtilsTests">
     <MSBuild Projects="Tests\HVRTTIUtilsTests.dproj" Targets="" />
   </Target>
@@ -172,13 +152,13 @@
     <MSBuild Projects="Tests\HVRTTIUtilsTests.dproj" Targets="Make" />
   </Target>
   <Target Name="Build">
-    <CallTarget Targets="TestVmt;TestDmt;TestMPlus;TestMethodTable;TestPubMethodTable;TestPubMethodParams;TestPubFieldTable;TestIntfTable;TestSimpleInterfaceRTTI;TestInterfaceVariants;TestPolyPub;TestHVMethodInfoClasses;TestExtendedInterfaceRTTI;TestPublishedMethodParams;TestMorePubMethodParams;HVRTTIUtilsTests" />
+    <CallTarget Targets="TestVmt;TestDmt;TestMPlus;TestMethodTable;TestPubMethodTable;TestPubMethodParams;TestPubFieldTable;TestIntfTable;TestSimpleInterfaceRTTI;TestInterfaceVariants;TestPolyPub;TestHVMethodInfoClasses;TestExtendedInterfaceRTTI;HVRTTIUtilsTests" />
   </Target>
   <Target Name="Clean">
-    <CallTarget Targets="TestVmt:Clean;TestDmt:Clean;TestMPlus:Clean;TestMethodTable:Clean;TestPubMethodTable:Clean;TestPubMethodParams:Clean;TestPubFieldTable:Clean;TestIntfTable:Clean;TestSimpleInterfaceRTTI:Clean;TestInterfaceVariants:Clean;TestPolyPub:Clean;TestHVMethodInfoClasses:Clean;TestExtendedInterfaceRTTI:Clean;TestPublishedMethodParams:Clean;TestMorePubMethodParams:Clean;HVRTTIUtilsTests:Clean" />
+    <CallTarget Targets="TestVmt:Clean;TestDmt:Clean;TestMPlus:Clean;TestMethodTable:Clean;TestPubMethodTable:Clean;TestPubMethodParams:Clean;TestPubFieldTable:Clean;TestIntfTable:Clean;TestSimpleInterfaceRTTI:Clean;TestInterfaceVariants:Clean;TestPolyPub:Clean;TestHVMethodInfoClasses:Clean;TestExtendedInterfaceRTTI:Clean;HVRTTIUtilsTests:Clean" />
   </Target>
   <Target Name="Make">
-    <CallTarget Targets="TestVmt:Make;TestDmt:Make;TestMPlus:Make;TestMethodTable:Make;TestPubMethodTable:Make;TestPubMethodParams:Make;TestPubFieldTable:Make;TestIntfTable:Make;TestSimpleInterfaceRTTI:Make;TestInterfaceVariants:Make;TestPolyPub:Make;TestHVMethodInfoClasses:Make;TestExtendedInterfaceRTTI:Make;TestPublishedMethodParams:Make;TestMorePubMethodParams:Make;HVRTTIUtilsTests:Make" />
+    <CallTarget Targets="TestVmt:Make;TestDmt:Make;TestMPlus:Make;TestMethodTable:Make;TestPubMethodTable:Make;TestPubMethodParams:Make;TestPubFieldTable:Make;TestIntfTable:Make;TestSimpleInterfaceRTTI:Make;TestInterfaceVariants:Make;TestPolyPub:Make;TestHVMethodInfoClasses:Make;TestExtendedInterfaceRTTI:Make;HVRTTIUtilsTests:Make" />
   </Target>
   <Import Condition="Exists('$(MSBuildBinPath)\Borland.Group.Targets')" Project="$(MSBuildBinPath)\Borland.Group.Targets" />
 </Project>

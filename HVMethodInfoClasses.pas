@@ -66,6 +66,7 @@ var
   MethodInfo: PMethodSignature;
   PublishedMethod: PPublishedMethod;
   MethodParam: PMethodParam;
+  ParameterFlags: TParameterFlags;
   ReturnRTTI: PReturnInfo;
   ParameterRTTI: PParamInfo;
   SignatureEnd: Pointer;
@@ -139,12 +140,9 @@ begin
       for j := Low(MethodInfo.Parameters) to High(MethodInfo.Parameters) do
       begin
         MethodParam := @MethodInfo.Parameters[j];
-{$IF CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
-        MethodParam.Flags := TypInfo.TParamFlags(ParameterRTTI.Flags);
-{$ELSE}
-        MethodParam.Flags := ParameterRTTI.Flags;
-{$IFEND CompilerVersion <= 22} // Delphi XE and older have TCallingConvention as a separate type, but ordinally compatible
-        if pfResult in ParameterRTTI.Flags then
+        ParameterFlags := TParameterFlags(ParameterRTTI.Flags);
+        MethodParam.Flags := ParameterFlags;
+        if HVMethodSignature.pfResult in ParameterFlags then
           MethodParam.ParamName := 'Result'
         else
           MethodParam.ParamName := SymbolNameToString(ParameterRTTI.Name);
@@ -155,8 +153,7 @@ begin
         ParameterRTTI := NextParameter(ParameterRTTI);
       end;
     end;
-    PublishedMethod := GetNextPublishedMethod(ClassInfo.ClassType, //
-      PublishedMethod);
+    PublishedMethod := GetNextPublishedMethod(ClassInfo.ClassType, PublishedMethod);
   end;
 end;
 
@@ -170,10 +167,6 @@ const
   LowTCallConv = Ord(Low(TCallConv));
   HighTCallingConvention = Ord(High(TCallingConvention));
   HighTCallConv = Ord(High(TCallConv));
-// Todo -o##jpl : Find a way to verify that both the TParamFlags types are the same for Delphi versions where they do not indirect:
-// ObjAuto:   TParamFlags = set of (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
-// TypInfo:   TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut);
-// TypInfo:   TParamFlags = set of TParamFlag;
 initialization
   Assert(LowTCallingConvention = LowTCallConv);
   Assert(HighTCallingConvention = HighTCallConv);

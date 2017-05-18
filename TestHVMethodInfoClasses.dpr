@@ -5,6 +5,7 @@ program TestHVMethodInfoClasses;
 uses
   SysUtils,
   TypInfo,
+  ObjAuto,
   HVMethodSignature in 'HVMethodSignature.pas',
   HVMethodInfoClasses in 'HVMethodInfoClasses.pas';
 
@@ -52,6 +53,7 @@ type
     function Test10: TNormalClass;
     function Test11: Integer;
 
+    // TODO -oHallvard : check other Delphi versions
     // Parameter types that are not supported -
     // gives confusing D7 compiler warning "[Warning] Redeclaration of 'Test3' hides a member in the base class"
     // procedure Test12(R: TClass);
@@ -154,17 +156,56 @@ begin
   DumpClass(TypeInfo(TMyClass));
 end;
 
+procedure TestCall;
+var
+  MyClass: TMyClass;
+  MethodInfo: PMethodInfoHeader;
+begin
+  MyClass := TMyClass.Create;
+  MethodInfo := GetMethodInfo(MyClass, 'Test2');
+  if Assigned(MethodInfo) then
+    Writeln(ObjectInvoke(MyClass, MethodInfo, [], ['Hallvard']));
+  MethodInfo := GetMethodInfo(MyClass, 'Test1');
+  if Assigned(MethodInfo) then
+    Writeln(ObjectInvoke(MyClass, MethodInfo, [], ['Hallvard']));
+end;
+
 begin
   try
     Test;
+    TestCall;
   except
     on E: Exception do
       Writeln(E.Message);
   end;
   Readln;
 
-  { Not sure if this is the Expected output:
+  { Expected output:
 
-RTTI for the published method "Test1" of class "TMyClass" has 47 extra bytes of unknown data!
+unit TestHVMethodInfoClasses;
+type
+  TMyClass = class (TObject)
+    function Test1(A: string; Result: string): string;
+    function Test2(A: string): Byte;
+    procedure Test3(R: Integer);
+    procedure Test4(R: TObject);
+    procedure Test5(R: TNormalClass);
+    procedure Test6(R: TSetOfByte);
+    procedure Test7(R: ShortString);
+    procedure Test8(R: ShortString);
+    procedure Test9(R: TEnum);
+    function Test10(): TNormalClass;
+    function Test11(): Integer;
+    function Test18(Result: ShortString): ShortString;
+    function Test19(): TObject;
+    function Test20(Result: IInterface): IInterface;
+    function Test21(Result: TSetOfByte): TSetOfByte;
+    function Test22(): TEnum;
+  end;
+
+Hallvard
+42
+Hallvard
+Hello from Test Hallvard
   }
 end.

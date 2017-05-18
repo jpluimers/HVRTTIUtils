@@ -1,6 +1,6 @@
 unit HVVMT;
 // Written by Hallvard Vassbotn, 2006 - http://hallvards.blogspot.com/
-// Currently assumes D7-D2006 (*probably* works in D5 and D6)
+// Currently assumes D7-XE8 (*probably* works in D5 and D6)
 
 interface
 

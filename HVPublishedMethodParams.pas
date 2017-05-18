@@ -102,7 +102,7 @@ begin
   for i := 0 to Result.ParamCount - 1 do
   begin
     MethodParam := @Result.Parameters[i];
-    MethodParam.Flags := ParamListRecord.Flags;
+    MethodParam.Flags := TParameterFlags(ParamListRecord.Flags);
     MethodParam.ParamName := SymbolNameToString(PackedShortString(@ParamListRecord.ParamName, ParamListRecord)^);
     MethodParam.TypeName := SymbolNameToString(PackedShortString(ParamListRecord)^);
   end;

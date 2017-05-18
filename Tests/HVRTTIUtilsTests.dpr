@@ -25,7 +25,6 @@ uses
   InterfaceVariantsTestsUnit in 'InterfaceVariantsTestsUnit.pas',
   PolymorphicPublishedMethodsTestsUnit in 'PolymorphicPublishedMethodsTestsUnit.pas',
   HVMethodInfoClasses in '..\HVMethodInfoClasses.pas',
-  HVMethodInfoClassesTestsUnit in 'HVMethodInfoClassesTestsUnit.pas',
   StatePerTestCaseUnit in 'StatePerTestCaseUnit.pas',
   MethodInfoClassesAndSignatureTestsUnit in 'MethodInfoClassesAndSignatureTestsUnit.pas';
 

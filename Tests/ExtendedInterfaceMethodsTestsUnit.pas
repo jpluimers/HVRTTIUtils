@@ -84,6 +84,7 @@ type
     procedure OkParam4(Value: TNormalClass);
 {$DEFINE ERRORS}
 {$IFDEF ERRORS}
+    // TODO -oHallvard : check other Delphi versions
     // Parameter types that is not supported -
     // - All pointer types
     // - open array parameters (array of Type), named dynmaic array is ok
@@ -101,11 +102,13 @@ type
     // procedure Test3(const R: array of Integer);
     // procedure Test3(const R: TRect);
 
+    // TODO -oHallvard : check other Delphi versions
     // Return types that are not supported
     function OkReturn1: shortstring;
     function OkReturn2: TObject;
     function OkReturn3: IInterface;
     function OkReturn4: TSetOfByte;
+    // TODO -oHallvard : check other Delphi versions
     // Return types that is not supported -
     // gives confusing D7 compiler warning "[Warning] Redeclaration of 'Test10' hides a member in the base class"
     function OkReturn5: TNormalClass;
@@ -116,6 +119,7 @@ type
     function OkReturn10: TIntegerArray;
     function OkReturn11: PWideChar;
 
+    // TODO -oHallvard : check other Delphi versions
     // Safecall calling convention is not supported
     // D7: [Fatal Error] Internal error: D6238
     procedure Test3(out R: Integer); safecall;

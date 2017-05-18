@@ -8,17 +8,70 @@ uses
   TypInfo,
   HVVMT;
 
+{ There are two TParamFlags problems.
+
+  Problem 1:
+
+  Delphi 7..XE have TParamFlags defined in both TypInfo and ObjAuto.
+  Other Delphi versions only in TypInfo.
+
+  The problem is that the affected ObjAuto units do not have TParamFlag defined.
+
+  Problem 2:
+
+  Delphi 7..2009 has pfResult defined in ObjAuto.TParamFlags, but not in TypInfo.TParamFlag.
+  The compiler however does emit pfResult.
+
+  So to summarise, in the affected Delphi versions:
+
+  ObjAuto has:
+    TParamFlags = set of (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
+  TypInfo has
+  either:
+   TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut);
+  or:
+    TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
+
+  TypInfo has:
+    TParamFlags = set of TParamFlag;
+
+  Working around this with $IF constructs turns in a too big mess,
+  hence the hard-coded TParameterFlag and TParameterFlags declarations.
+
+  Below is one of the tried constructs.
+}
+
+(*
+{$IF Declared(TypInfo.TParamFlags)} // succeeds
+  {$IF Declared(ObjAuto.TParamFlags)} // succeeds
+    {$IF Declared(ObjAuto.TParamFlags.pfResult)} // succeeds
+      {$IF Declared(TypInfo.TParamFlags.pfResult)} // succeeds
+
+//        {$IF Declared(TObjAutoTParamFlags.pfResult)} // fails
+//          {$IF Declared(TTypInfoTParamFlags.pfResult)} // fails
+type
+  TObjAutoTParamFlags = ObjAuto.TParamFlags;
+  TTypInfoTParamFlags = TypInfo.TParamFlags;
+const
+  cObjAutoTParamFlags: TObjAutoTParamFlags = [pfResult];
+  cTypInfoTParamFlags: TTypInfoTParamFlags = [pfVar];
+  cPfBar = Ord(pfVar);
+//  cPfResult = Ord(ObjAuto.TParamFlags.pfResult); // fails
+//  cPfBar = Ord(TypInfo.TParamFlag.pfVar); // fails
+...
+{$IFEND Declared(TParamFlag)}
+*)
+
+
 type
   TParamLocation = (plUnknown = -1, plEAX = 0, plEDX = 1, plECX = 2, plStack1 = 3, plStackN = $FFFF);
-{$IF not Declared(TParamFlag)}
-  TParamFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
-  TParamFlags = set of TParamFlag;
-{$IFEND}
+  TParameterFlag = (pfVar, pfConst, pfArray, pfAddress, pfReference, pfOut, pfResult);
+  TParameterFlags = set of TParameterFlag;
   PMethodParam = ^TMethodParam;
 
   TMethodParam = record
     // Structures in our units are to make the RTTI easier to use, so use string type and convert data from TSymbolName in the original structures
-    Flags: TParamFlags;
+    Flags: TParameterFlags;
     ParamName: string; // same content as System.TypInfo.TTypeData.ParamList[].ParamName: ShortString; so use TSymbolName
     TypeName: string; // same content as System.TypInfo.TTypeInfo.Name: TSymbolName;
     TypeInfo: PTypeInfo;
@@ -57,7 +110,7 @@ function MethodKindString(const MethodKind: TMethodKind): string;
 
 function MethodParamString(const MethodParam: TMethodParam; const ExcoticFlags: Boolean = False): string;
 
-function MethodParametesString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
+function MethodParametersString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
 
 function MethodSignatureToString(const Name: string; const MethodSignature: TMethodSignature): string; overload;
 
@@ -143,10 +196,8 @@ begin
       Result := '{addr} ' + Result;
     if pfReference in MethodParam.Flags then
       Result := '{ref} ' + Result;
-{$IF Declared(pfResult)}
-    if pfResult in MethodParam.Flags then
-      Result := '{result} ' + Result;
-{$IFEND Declared(pfResult)}
+//    if pfResult in MethodParam.Flags then
+//      Result := '{result} ' + Result;
   end;
 
   Result := Result + MethodParam.ParamName + ': ';
@@ -155,7 +206,7 @@ begin
   Result := Result + MethodParam.TypeName;
 end;
 
-function MethodParametesString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
+function MethodParametersString(const MethodSignature: TMethodSignature; const SkipSelf: Boolean = True): string;
 var
   i: Integer;
   MethodParam: PMethodParam;
@@ -175,10 +226,8 @@ begin
         (MethodParam.TypeInfo.Kind in [tkInterface, tkClass]) //
         then
           Continue;
-{$IF Declared(pfResult)}
       if pfResult in MethodParam.Flags then
         Continue;
-{$IFEND Declared(pfResult)}
       if ParamIndex > 0 then
         Result := Result + '; ';
       Result := Result + MethodParamString(MethodParam^);
@@ -211,7 +260,7 @@ begin
   Result := Format('%s %s(%s)', //
     [MethodKindString(MethodSignature.MethodKind), //
     Name, //
-    MethodParametesString(MethodSignature)]);
+    MethodParametersString(MethodSignature)]);
   if MethodSignature.HasSignatureRTTI and (MethodSignature.MethodKind = mkFunction) then
     Result := Result + ': ' + MethodSignature.ResultTypeName;
   Result := Result + ';';
